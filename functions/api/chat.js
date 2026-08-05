@@ -23,7 +23,8 @@ answer is not in the content, say something like:
   form so someone from Globalion can respond directly."
 
 Rules:
-- Be concise (2-5 short sentences). Sound human, not corporate.
+- Be concise: 2-4 short sentences, max ~80 words. Never leave a sentence half-finished.
+- Sound human, not corporate. No bullet lists, no headings — plain prose.
 - Never invent facts, pricing, or people.
 - If asked for pricing, contact, or a demo, direct them to the 'Talk to us' form.
 - Reply in the same language the user wrote in.
@@ -75,7 +76,7 @@ export async function onRequestPost({ request, env }) {
       model,
       messages: [{ role: 'system', content: system }, ...trimmed],
       temperature: 0.3,
-      max_tokens: 400,
+      max_tokens: 800,
     }),
   });
 
