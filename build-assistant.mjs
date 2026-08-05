@@ -68,8 +68,9 @@ for (const file of htmlFiles) {
   let html = fs.readFileSync(file, 'utf8');
   const $ = load(html);
 
-  // Remove Next.js JS chunks and preload hints for JS
-  $('script[src*="/_next/"]').remove();
+  // Remove Next.js JS chunks and preload hints for JS.
+  // Note: src is relative ("_next/..."), so match without the leading slash.
+  $('script[src*="_next/"]').remove();
   $('link[rel="preload"][as="script"]').remove();
   $('link[rel="modulepreload"]').remove();
   // Remove the __NEXT_DATA__ JSON blob and the runtime bootstrap script
