@@ -1,0 +1,13 @@
+{
+  "name": "globalion-preview",
+  "private": true,
+  "version": "0.1.0",
+  "description": "UAT preview of globalion.in with a GPT-5 mini chatbot widget bolted on. Edit HTML → push → Cloudflare Pages redeploys → send Pawan the URL for approval.",
+  "type": "module",
+  "scripts": {
+    "build": "node build-assistant.mjs"
+  },
+  "devDependencies": {
+    "cheerio": "^1.0.0"
+  }
+}
