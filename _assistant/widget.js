@@ -122,10 +122,33 @@
   const closeBtn = panel.querySelector('.glbl-chat-close');
   const messages = [];
 
+  // Very small Markdown-link renderer: turns [label](url) into <a> elements.
+  // Everything else is inserted as plain text so injected HTML can't escape.
+  function renderRichText(el, text) {
+    const linkRe = /\[([^\]]+)\]\(([^)\s]+)\)/g;
+    let last = 0, m;
+    while ((m = linkRe.exec(text)) !== null) {
+      if (m.index > last) el.appendChild(document.createTextNode(text.slice(last, m.index)));
+      const a = document.createElement('a');
+      a.textContent = m[1];
+      // Only allow relative paths (start with /) or http(s) links from same host
+      const href = m[2];
+      if (href.startsWith('/') || /^https?:\/\//i.test(href)) a.href = href;
+      else a.href = '/' + href;
+      a.style.color = '#93c5fd';
+      a.style.textDecoration = 'underline';
+      a.target = '_self';
+      el.appendChild(a);
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) el.appendChild(document.createTextNode(text.slice(last)));
+  }
+
   function addMsg(role, text, cls) {
     const el = document.createElement('div');
     el.className = 'glbl-msg ' + (cls || role);
-    el.textContent = text;
+    if (role === 'assistant') renderRichText(el, text);
+    else el.textContent = text;
     log.appendChild(el);
     log.scrollTop = log.scrollHeight;
     return el;
