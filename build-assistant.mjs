@@ -8,11 +8,18 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { load } from 'cheerio';
 
 const REPO = process.cwd();
-const WIDGET_TAG = '<script src="/_assistant/widget.js" defer></script>';
 const CONTENT_PATH = path.join(REPO, 'assistant-content.json');
+
+// Version the widget URL by the hash of its source so browsers don't serve
+// a stale copy from the 4h Cloudflare cache after we edit widget.js.
+const widgetSrc = fs.readFileSync(path.join(REPO, '_assistant', 'widget.js'), 'utf8');
+const widgetVer = crypto.createHash('sha1').update(widgetSrc).digest('hex').slice(0, 8);
+const WIDGET_TAG = `<script src="/_assistant/widget.js?v=${widgetVer}" defer></script>`;
+console.log(`Widget version: ${widgetVer}`);
 
 function walkHtml(dir, out = []) {
   for (const name of fs.readdirSync(dir)) {
@@ -84,8 +91,11 @@ for (const file of htmlFiles) {
 
   html = $.html();
 
-  // Inject the chatbot widget (idempotent — skip if already present)
-  if (!html.includes(WIDGET_TAG) && html.includes('</body>')) {
+  // Remove any older widget script tag (previous version hash) before injecting
+  // the current one — otherwise we'd stack multiple stale copies.
+  html = html.replace(/<script[^>]*_assistant\/widget\.js[^>]*><\/script>\s*/g, '');
+  // Inject the chatbot widget with the current version query string
+  if (html.includes('</body>')) {
     html = html.replace('</body>', `${WIDGET_TAG}\n</body>`);
     injected++;
   }
