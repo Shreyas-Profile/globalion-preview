@@ -20,9 +20,28 @@
       display: flex; align-items: center; justify-content: center;
       transition: transform .18s ease, box-shadow .18s ease;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      animation: glbl-idle 3.6s ease-in-out infinite;
     }
-    .glbl-chat-btn:hover { transform: translateY(-2px) scale(1.04); }
+    .glbl-chat-btn::before {
+      content: ""; position: absolute; inset: -4px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,99,235,.5) 0%, transparent 70%);
+      animation: glbl-pulse 2.2s ease-out infinite;
+      z-index: -1; pointer-events: none;
+    }
+    .glbl-chat-btn:hover { transform: translateY(-3px) scale(1.08); animation-play-state: paused; }
     .glbl-chat-btn svg { width: 26px; height: 26px; stroke: white; stroke-width: 2; fill: none; }
+    @keyframes glbl-idle {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+    @keyframes glbl-pulse {
+      0%   { transform: scale(1);   opacity: .7; }
+      70%  { transform: scale(1.4); opacity: 0; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    .glbl-chat-btn.open-state { animation: none; }
+    .glbl-chat-btn.open-state::before { display: none; }
+
     .glbl-chat-panel {
       position: fixed; right: 24px; bottom: 96px; z-index: 2147483000;
       width: min(400px, calc(100vw - 32px));
@@ -33,8 +52,16 @@
       box-shadow: 0 24px 60px rgba(0,0,0,.5), 0 8px 20px rgba(0,0,0,.25);
       display: none; flex-direction: column; overflow: hidden;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      transform-origin: bottom right;
     }
-    .glbl-chat-panel.open { display: flex; }
+    .glbl-chat-panel.open {
+      display: flex;
+      animation: glbl-panel-in .32s cubic-bezier(.22,1.2,.36,1) both;
+    }
+    @keyframes glbl-panel-in {
+      0%   { transform: translateY(12px) scale(.92); opacity: 0; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
     .glbl-chat-head {
       padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.08);
       display: flex; justify-content: space-between; align-items: center;
@@ -42,6 +69,29 @@
     }
     .glbl-chat-head h4 { margin: 0; font-size: 14px; font-weight: 600; letter-spacing: .2px; }
     .glbl-chat-head p { margin: 2px 0 0 0; font-size: 11px; color: #94a3b8; }
+    .glbl-chat-head-left { display: flex; align-items: center; gap: 10px; }
+    .glbl-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg,#3b82f6,#2563eb);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(37,99,235,.4);
+      animation: glbl-avatar-bob 4s ease-in-out infinite;
+    }
+    @keyframes glbl-avatar-bob {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25%      { transform: translateY(-2px) rotate(-4deg); }
+      75%      { transform: translateY(-2px) rotate(4deg); }
+    }
+    .glbl-live-dot {
+      display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+      background: #10b981; margin-right: 5px; vertical-align: middle;
+      animation: glbl-live 2s ease-in-out infinite;
+    }
+    @keyframes glbl-live {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,.7); }
+      50%      { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+    }
     .glbl-chat-close {
       background: transparent; border: none; color: #94a3b8; cursor: pointer;
       width: 28px; height: 28px; border-radius: 6px; font-size: 18px; line-height: 1;
@@ -54,18 +104,46 @@
     .glbl-msg {
       max-width: 85%; padding: 10px 14px; border-radius: 14px;
       font-size: 14px; line-height: 1.45; white-space: pre-wrap; word-wrap: break-word;
+      animation: glbl-msg-in .3s cubic-bezier(.22,1.2,.36,1) both;
+    }
+    @keyframes glbl-msg-in {
+      0%   { transform: translateY(8px); opacity: 0; }
+      100% { transform: translateY(0); opacity: 1; }
     }
     .glbl-msg.user { align-self: flex-end; background: #2563eb; color: white; border-bottom-right-radius: 4px; }
     .glbl-msg.assistant { align-self: flex-start; background: rgba(255,255,255,.06); color: #e5e7eb; border-bottom-left-radius: 4px; }
     .glbl-msg.error { align-self: flex-start; background: rgba(239,68,68,.15); color: #fca5a5; border: 1px solid rgba(239,68,68,.3); }
+    .glbl-msg a { transition: opacity .15s ease; }
+    .glbl-msg a:hover { opacity: .75; }
     .glbl-msg.loading {
       align-self: flex-start; background: rgba(255,255,255,.06); color: #94a3b8;
-      display: inline-flex; gap: 4px;
+      display: inline-flex; gap: 5px; padding: 12px 14px;
     }
-    .glbl-msg.loading span { width: 6px; height: 6px; border-radius: 50%; background: #94a3b8; animation: glbl-blink 1.2s infinite; }
-    .glbl-msg.loading span:nth-child(2) { animation-delay: .2s; }
-    .glbl-msg.loading span:nth-child(3) { animation-delay: .4s; }
-    @keyframes glbl-blink { 0%,80%,100% { opacity: .3; } 40% { opacity: 1; } }
+    .glbl-msg.loading span {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: linear-gradient(135deg,#93c5fd,#3b82f6);
+      animation: glbl-bounce 1s ease-in-out infinite;
+    }
+    .glbl-msg.loading span:nth-child(2) { animation-delay: .15s; }
+    .glbl-msg.loading span:nth-child(3) { animation-delay: .3s; }
+    @keyframes glbl-bounce {
+      0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+      30%           { transform: translateY(-6px); opacity: 1; }
+    }
+    .glbl-suggestions {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+      animation: glbl-msg-in .35s cubic-bezier(.22,1.2,.36,1) both .1s;
+    }
+    .glbl-suggest {
+      background: rgba(37,99,235,.12); color: #93c5fd;
+      border: 1px solid rgba(37,99,235,.3);
+      padding: 6px 12px; border-radius: 999px;
+      font-size: 12px; cursor: pointer; font-family: inherit;
+      transition: all .18s ease;
+    }
+    .glbl-suggest:hover {
+      background: rgba(37,99,235,.25); color: white; transform: translateY(-1px);
+    }
     .glbl-chat-input-wrap {
       padding: 12px; border-top: 1px solid rgba(255,255,255,.08);
       display: flex; gap: 8px; background: rgba(0,0,0,.2);
@@ -79,7 +157,13 @@
     .glbl-chat-send {
       background: #2563eb; color: white; border: none; padding: 0 16px; border-radius: 10px;
       font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: transform .12s ease, background .18s ease, box-shadow .18s ease;
     }
+    .glbl-chat-send:hover:not(:disabled) {
+      background: #1d4ed8; transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(37,99,235,.3);
+    }
+    .glbl-chat-send:active:not(:disabled) { transform: translateY(0) scale(.97); }
     .glbl-chat-send:disabled { opacity: .5; cursor: not-allowed; }
     .glbl-chat-footer {
       padding: 6px 12px 10px 12px; text-align: center;
@@ -98,9 +182,12 @@
   panel.className = 'glbl-chat-panel';
   panel.innerHTML = `
     <div class="glbl-chat-head">
-      <div>
-        <h4>Chat with Globi</h4>
-        <p>Your friendly guide to Globalion</p>
+      <div class="glbl-chat-head-left">
+        <div class="glbl-avatar" aria-hidden="true">✨</div>
+        <div>
+          <h4>Chat with Globi</h4>
+          <p><span class="glbl-live-dot"></span>Your friendly guide to Globalion</p>
+        </div>
       </div>
       <button class="glbl-chat-close" aria-label="Close chat">×</button>
     </div>
@@ -154,12 +241,41 @@
     return el;
   }
 
+  const SUGGESTIONS = [
+    'What does BuildOps do?',
+    'Which industries do you serve?',
+    'How can I get a demo?',
+    "What's Medhavarse?",
+  ];
+
+  function addSuggestions() {
+    const wrap = document.createElement('div');
+    wrap.className = 'glbl-suggestions';
+    for (const s of SUGGESTIONS) {
+      const b = document.createElement('button');
+      b.className = 'glbl-suggest';
+      b.type = 'button';
+      b.textContent = s;
+      b.addEventListener('click', () => {
+        wrap.remove();
+        input.value = s;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        form.requestSubmit();
+      });
+      wrap.appendChild(b);
+    }
+    log.appendChild(wrap);
+    log.scrollTop = log.scrollHeight;
+  }
+
   function openPanel(open) {
     panel.classList.toggle('open', open);
+    btn.classList.toggle('open-state', open);
     if (open && messages.length === 0) {
-      addMsg('assistant', "Hey! 👋 I'm Globi — your guide to everything Globalion. Ask me about our AI products (BuildOps, cmplihr, Medhavarse, InterviewPanda…), services, industries we work in, or anything else on the site. What's on your mind?");
+      addMsg('assistant', "Hey! 👋 I'm Globi — your guide to everything Globalion. Ask me about our AI products, services, or anything else on the site. What's on your mind?");
+      addSuggestions();
     }
-    if (open) setTimeout(() => input.focus(), 120);
+    if (open) setTimeout(() => input.focus(), 220);
   }
 
   btn.addEventListener('click', () => openPanel(!panel.classList.contains('open')));
