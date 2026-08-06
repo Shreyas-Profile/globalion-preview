@@ -157,7 +157,7 @@
   function openPanel(open) {
     panel.classList.toggle('open', open);
     if (open && messages.length === 0) {
-      addMsg('assistant', "Hi! I can answer questions about Globalion — our services, products (BuildOps, cmplihr, Medhavarse, InterviewPanda…), industries, careers, and more. What would you like to know?");
+      addMsg('assistant', "Hey! 👋 I'm Globi — your guide to everything Globalion. Ask me about our AI products (BuildOps, cmplihr, Medhavarse, InterviewPanda…), services, industries we work in, or anything else on the site. What's on your mind?");
     }
     if (open) setTimeout(() => input.focus(), 120);
   }
