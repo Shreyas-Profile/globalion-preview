@@ -99,8 +99,8 @@
   panel.innerHTML = `
     <div class="glbl-chat-head">
       <div>
-        <h4>Ask Globalion</h4>
-        <p>Answers based on this site · GPT-5 mini</p>
+        <h4>Chat with Globi</h4>
+        <p>Your friendly guide to Globalion</p>
       </div>
       <button class="glbl-chat-close" aria-label="Close chat">×</button>
     </div>
