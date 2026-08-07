@@ -296,26 +296,43 @@
     log.appendChild(loading);
     log.scrollTop = log.scrollHeight;
 
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages }),
-      });
-      const data = await res.json();
-      loading.remove();
-      if (!res.ok || data.error) {
-        addMsg('assistant', data.error || `Sorry — I hit an error (HTTP ${res.status}). Try again in a moment.`, 'error');
-      } else {
-        addMsg('assistant', data.reply);
-        messages.push({ role: 'assistant', content: data.reply });
+    // Client-side retry — 502s often come from the Cloudflare edge before
+    // my function even runs, so server-side retry doesn't cover them.
+    // Two extra tries with short backoff before showing an error.
+    let data, lastStatus = 0, lastErr = '';
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages }),
+        });
+        lastStatus = res.status;
+        // 502/503/504/429 from CDN or my function → retry
+        if (res.status >= 500 || res.status === 429) {
+          lastErr = 'HTTP ' + res.status;
+          if (attempt < 3) { await new Promise((r) => setTimeout(r, 500 * attempt)); continue; }
+        }
+        try {
+          data = await res.json();
+        } catch {
+          data = { error: 'The model is having a moment — please try again.' };
+        }
+        break;
+      } catch (err) {
+        lastErr = err?.message || 'network';
+        if (attempt < 3) { await new Promise((r) => setTimeout(r, 500 * attempt)); continue; }
+        data = { error: 'Network error — please try again.' };
       }
-    } catch (err) {
-      loading.remove();
-      addMsg('assistant', 'Network error — please try again.', 'error');
-    } finally {
-      sendBtn.disabled = false;
-      input.focus();
     }
+    loading.remove();
+    if (!data || data.error) {
+      addMsg('assistant', (data && data.error) || `Sorry — ${lastErr}. Try again in a moment.`, 'error');
+    } else {
+      addMsg('assistant', data.reply);
+      messages.push({ role: 'assistant', content: data.reply });
+    }
+    sendBtn.disabled = false;
+    input.focus();
   });
 })();
