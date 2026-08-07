@@ -4,6 +4,20 @@
    Nothing overrides site colours, no hue-shifts, no forced palette.
 */
 
+/* --- Force framer-motion initial hidden states visible ---
+   The site uses a motion library that sets inline style="opacity:0;
+   transform:translateY(24px)" on scroll-reveal elements, then animates
+   them to opacity:1 / translate:0 via JS. We stripped all scripts from
+   the mirror so those never animate — they stay invisible forever.
+   Overriding here so every animatable section becomes visible on load. */
+[style*="opacity: 0"],
+[style*="opacity:0"],
+[style*="opacity: 0.01"],
+[style*="opacity:0.01"] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
 /* Theme toggle (floating pill, bottom-left) — tiny, out of the way */
 .nova-theme-toggle {
   position: fixed;
