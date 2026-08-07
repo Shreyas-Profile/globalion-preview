@@ -14,12 +14,19 @@ import { load } from 'cheerio';
 const REPO = process.cwd();
 const CONTENT_PATH = path.join(REPO, 'assistant-content.json');
 
-// Version the widget URL by the hash of its source so browsers don't serve
-// a stale copy from the 4h Cloudflare cache after we edit widget.js.
-const widgetSrc = fs.readFileSync(path.join(REPO, '_assistant', 'widget.js'), 'utf8');
-const widgetVer = crypto.createHash('sha1').update(widgetSrc).digest('hex').slice(0, 8);
+// Version each injected asset by the hash of its source so browsers
+// don't serve stale copies from the 4h Cloudflare cache after edits.
+function hashOf(relPath) {
+  const src = fs.readFileSync(path.join(REPO, relPath), 'utf8');
+  return crypto.createHash('sha1').update(src).digest('hex').slice(0, 8);
+}
+const widgetVer = hashOf('_assistant/widget.js');
+const enhanceCssVer = hashOf('_assistant/enhance.css');
+const enhanceJsVer = hashOf('_assistant/enhance.js');
 const WIDGET_TAG = `<script src="/_assistant/widget.js?v=${widgetVer}" defer></script>`;
-console.log(`Widget version: ${widgetVer}`);
+const ENHANCE_CSS_TAG = `<link rel="stylesheet" href="/_assistant/enhance.css?v=${enhanceCssVer}">`;
+const ENHANCE_JS_TAG = `<script src="/_assistant/enhance.js?v=${enhanceJsVer}" defer></script>`;
+console.log(`Versions — widget: ${widgetVer} · enhance.css: ${enhanceCssVer} · enhance.js: ${enhanceJsVer}`);
 
 function walkHtml(dir, out = []) {
   for (const name of fs.readdirSync(dir)) {
@@ -91,12 +98,22 @@ for (const file of htmlFiles) {
 
   html = $.html();
 
-  // Remove any older widget script tag (previous version hash) before injecting
-  // the current one — otherwise we'd stack multiple stale copies.
-  html = html.replace(/<script[^>]*_assistant\/widget\.js[^>]*><\/script>\s*/g, '');
-  // Inject the chatbot widget with the current version query string
+  // Remove any older widget/enhance tags (previous hashes) before
+  // injecting the current ones — otherwise we'd stack stale copies.
+  html = html.replace(/<script[^>]*_assistant\/(widget|enhance)\.js[^>]*><\/script>\s*/g, '');
+  html = html.replace(/<link[^>]*_assistant\/enhance\.css[^>]*>\s*/g, '');
+
+  // enhance.css goes in <head> right before </head> so it cascades over
+  // the site's own CSS (still deferred by being late in <head>).
+  if (html.includes('</head>')) {
+    html = html.replace('</head>', `${ENHANCE_CSS_TAG}\n</head>`);
+  }
+  // enhance.js + widget.js at end of <body>
   if (html.includes('</body>')) {
-    html = html.replace('</body>', `${WIDGET_TAG}\n</body>`);
+    html = html.replace(
+      '</body>',
+      `${ENHANCE_JS_TAG}\n${WIDGET_TAG}\n</body>`,
+    );
     injected++;
   }
 

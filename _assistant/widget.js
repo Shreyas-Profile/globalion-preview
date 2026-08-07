@@ -185,7 +185,7 @@
       <div class="glbl-chat-head-left">
         <div class="glbl-avatar" aria-hidden="true">✨</div>
         <div>
-          <h4>Chat with Globi</h4>
+          <h4>Chat with Nova</h4>
           <p><span class="glbl-live-dot"></span>Your friendly guide to Globalion</p>
         </div>
       </div>
@@ -272,7 +272,7 @@
     panel.classList.toggle('open', open);
     btn.classList.toggle('open-state', open);
     if (open && messages.length === 0) {
-      addMsg('assistant', "Hey! 👋 I'm Globi — your guide to everything Globalion. Ask me about our AI products, services, or anything else on the site. What's on your mind?");
+      addMsg('assistant', "Hey! 👋 I'm Nova — your guide to everything Globalion. Ask me about our AI products, services, or anything else on the site. What's on your mind?");
       addSuggestions();
     }
     if (open) setTimeout(() => input.focus(), 220);

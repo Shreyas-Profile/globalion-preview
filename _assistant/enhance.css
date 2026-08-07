@@ -1,0 +1,108 @@
+/* Nova UAT visual polish layer.
+   Layered over the mirrored globalion.in styles — never touches structure.
+   Rules cascade because they're loaded AFTER the site's own CSS via the
+   deferred <link> injected by build-assistant.mjs.
+
+   Design intent (Anthropic + Linear as references):
+   • Sections fade + rise into view on scroll
+   • Cards lift and gain a soft glow on hover
+   • Section headings sit on a more generous grid
+   • Interactive elements have consistent timing (220-280ms cubic-bezier)
+   • Subtle radial ambient glow behind the hero
+*/
+
+:root {
+  --nova-ease: cubic-bezier(.22, 1.2, .36, 1);
+  --nova-accent: #3b82f6;
+  --nova-accent-2: #93c5fd;
+}
+
+html { scroll-behavior: smooth; }
+
+/* Reveal-on-scroll — added to major children by enhance.js.
+   Two states so we don't animate what's already on screen at load. */
+.nova-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .7s var(--nova-ease), transform .7s var(--nova-ease);
+  will-change: opacity, transform;
+}
+.nova-reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Card-like blocks — hover lift with a soft blue glow.
+   The [class*="card"] selector catches Tailwind- and Next-style card
+   classnames from the mirror without needing to know exact hashes. */
+[class*="card"], [class*="Card"], article, [data-card] {
+  transition:
+    transform .28s var(--nova-ease),
+    box-shadow .28s var(--nova-ease),
+    border-color .28s var(--nova-ease);
+}
+[class*="card"]:hover,
+[class*="Card"]:hover,
+article:hover:not(header article):not(nav article),
+[data-card]:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px -8px rgba(59, 130, 246, .18),
+              0 4px 12px -4px rgba(0, 0, 0, .25);
+}
+
+/* Links inside prose gain a subtle underline animation on hover.
+   Skip nav/header/footer links so we don't fight the site's own styling. */
+main a:not([class*="btn"]):not([class*="button"]):not(nav a):not(header a):not(footer a) {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size .3s var(--nova-ease);
+}
+main a:not([class*="btn"]):not([class*="button"]):not(nav a):not(header a):not(footer a):hover {
+  background-size: 100% 1px;
+}
+
+/* Buttons — consistent lift on hover, press-down on click. */
+button, a[role="button"], [class*="btn"], [class*="Button"] {
+  transition:
+    transform .18s var(--nova-ease),
+    box-shadow .18s var(--nova-ease),
+    background-color .18s var(--nova-ease),
+    color .18s var(--nova-ease);
+}
+button:hover:not(:disabled), a[role="button"]:hover, [class*="btn"]:hover, [class*="Button"]:hover {
+  transform: translateY(-1px);
+}
+button:active:not(:disabled), a[role="button"]:active, [class*="btn"]:active, [class*="Button"]:active {
+  transform: translateY(0) scale(.985);
+}
+
+/* Section headings get a hair more letter-spacing negative for that
+   modern-editorial feel Linear and Anthropic use. Only large h1/h2 —
+   don't disturb small labels. */
+h1 { letter-spacing: -.02em; }
+h2 { letter-spacing: -.015em; }
+
+/* Ambient radial glow behind the hero — layers below content so no
+   accessibility impact. Uses the same blue as the mascot for
+   cross-surface cohesion. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(59, 130, 246, .08), transparent 60%),
+    radial-gradient(900px 500px at 90% 5%, rgba(147, 197, 253, .06), transparent 55%);
+  opacity: 1;
+  transition: opacity .5s;
+}
+
+/* Respect users who don't want motion. */
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  html { scroll-behavior: auto; }
+  .nova-reveal { opacity: 1; transform: none; }
+}
