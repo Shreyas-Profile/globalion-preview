@@ -85,11 +85,16 @@
       const hasMedia = !!el.querySelector('img, video, iframe, svg[width], canvas');
       const hasHeading = !!el.querySelector('h1, h2, h3');
       if (text < 8 && !hasMedia && !hasHeading) return true;
-      // Section has heading but < 200 chars of body → likely a broken
-      // React-driven carousel (heading + arrows but no cards). Kill it —
-      // our nova-tabs already serves the same purpose above.
-      if (hasHeading && text < 200 && el.tagName === 'SECTION' &&
-          el.offsetHeight > 400) {
+      // Section has heading but sparse body AND excessive height → broken
+      // React-driven carousel (heading + arrows but no cards). Kill it.
+      if (hasHeading && text < 300 && el.tagName === 'SECTION' &&
+          el.offsetHeight > 350) {
+        return true;
+      }
+      // Density check: if a big section has almost no text per pixel, it's
+      // a dead layout wrapper.
+      if (el.tagName === 'SECTION' && el.offsetHeight > 500 &&
+          text / el.offsetHeight < 0.5) {
         return true;
       }
       return false;

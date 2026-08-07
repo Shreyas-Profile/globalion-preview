@@ -10,8 +10,9 @@
   --nova-bg-1:      #0a1128;
   --nova-fg:        #e6edff;
   --nova-fg-muted:  #94a3c4;
-  --nova-accent:    #6366f1;   /* indigo */
+  --nova-accent:    #6366f1;   /* indigo — for bg/fills */
   --nova-accent-hi: #a78bfa;   /* violet */
+  --nova-accent-text: #c7d2fe; /* indigo-200 — BRIGHTER for text on dark */
   --nova-cyan:      #22d3ee;
   --nova-line:      rgba(148, 163, 196, .12);
   --nova-glass:     rgba(10, 17, 40, .72);
@@ -27,6 +28,7 @@
   --nova-fg-muted:  #5a5d78;
   --nova-accent:    #4338ca;   /* darker indigo for contrast on cream */
   --nova-accent-hi: #7c3aed;
+  --nova-accent-text: #4338ca; /* dark indigo reads well on cream */
   --nova-cyan:      #0891b2;
   --nova-line:      rgba(23, 23, 42, .10);
   --nova-glass:     rgba(248, 245, 239, .78);
@@ -366,8 +368,21 @@ a[href="/contact"]:hover, a[href="/contact/"]:hover, [class*="Talk"]:hover {
   filter: brightness(1.1);
   box-shadow: 0 12px 32px -8px rgba(99, 102, 241, .7) !important;
 }
-[class*="text-accent"] { color: var(--nova-accent) !important; }
+/* Text colours use the BRIGHTER token so pills / labels are readable
+   on the near-black card backgrounds. */
+[class*="text-accent"] { color: var(--nova-accent-text) !important; }
 [class*="border-accent"] { border-color: var(--nova-accent) !important; }
+/* Industry-tag pills: give them a subtle indigo tint on the fill so
+   the outlined-pill style has more presence than pure text on black. */
+main a[class*="rounded-full"], main span[class*="rounded-full"] {
+  background: rgba(99, 102, 241, .12) !important;
+  color: #dbeafe !important;
+  border-color: rgba(99, 102, 241, .4) !important;
+}
+main a[class*="rounded-full"]:hover {
+  background: rgba(99, 102, 241, .22) !important;
+  color: #fff !important;
+}
 
 /* --- Prose link underline --- */
 main a:not([class*="btn"]):not([class*="button"]):not([class*="Button"]):not(nav a):not(header a):not(footer a):not([role="button"]) {

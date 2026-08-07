@@ -1,0 +1,9 @@
+/*.html
+  Cache-Control: no-cache, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/
+  Cache-Control: no-cache, must-revalidate
+
+/_assistant/*
+  Cache-Control: public, max-age=3600, must-revalidate
