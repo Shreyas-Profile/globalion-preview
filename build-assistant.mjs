@@ -56,10 +56,20 @@ for (const file of htmlFiles) {
   pages.push({ url, title, text });
 }
 
-// Assemble into one big markdown-like blob so the model sees section boundaries.
+// Assemble a COMPRESSED page index for the chat system prompt. Full 91KB
+// site text was slowing every request to 10+s (22K input tokens) and
+// causing responses to cut off before the link. New format per page:
+// URL, title, and ~500 chars of the most information-dense text (skips
+// nav boilerplate). Total ~15KB, ~4K tokens.
+const summarise = (text) => {
+  // Take first non-nav paragraph-ish chunk. Drop everything up to the
+  // first "real sentence" (contains a lowercase letter and a period).
+  const trimmed = text.replace(/^([A-Z][^.]{0,30}\s+){2,}/g, '').trim();
+  return trimmed.slice(0, 520).replace(/\s+\S+$/, '') + (trimmed.length > 520 ? '…' : '');
+};
 const content = pages
-  .map((p) => `## ${p.title}\n[${p.url}]\n${p.text}\n`)
-  .join('\n---\n\n');
+  .map((p) => `## ${p.title}\n${p.url}\n${summarise(p.text)}`)
+  .join('\n\n---\n\n');
 
 const snapshot = {
   indexedAt: new Date().toISOString().slice(0, 10),
@@ -68,7 +78,7 @@ const snapshot = {
   content,
 };
 fs.writeFileSync(CONTENT_PATH, JSON.stringify(snapshot, null, 0));
-console.log(`Wrote ${CONTENT_PATH} — ${pages.length} pages, ${(content.length / 1024).toFixed(1)} KB text.`);
+console.log(`Wrote ${CONTENT_PATH} — ${pages.length} pages, ${(content.length / 1024).toFixed(1)} KB text (compressed).`);
 
 // -- 2. Strip Next.js hydration scripts + inject widget ------------------
 // The mirror was pulled from a live Next.js site. Its client-side scripts

@@ -149,7 +149,7 @@ export async function onRequestPost({ request, env }) {
         model,
         messages: [{ role: 'system', content: system }, ...trimmed],
         temperature: 0.3,
-        max_tokens: 500,
+        max_tokens: 900,
       }),
       signal: controller.signal,
     });

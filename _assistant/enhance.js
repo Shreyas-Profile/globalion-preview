@@ -37,22 +37,35 @@
     // IntersectionObserver for the rest
     if (!('IntersectionObserver' in window)) {
       for (const el of targets) el.classList.add('in');
-      return;
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) {
-          if (e.isIntersecting) {
-            e.target.classList.add('in');
-            io.unobserve(e.target);
+    } else {
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('in');
+              io.unobserve(e.target);
+            }
           }
-        }
-      },
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.05 }
-    );
-    for (const el of targets) {
-      if (!el.classList.contains('in')) io.observe(el);
+        },
+        { rootMargin: '0px 0px -8% 0px', threshold: 0.05 }
+      );
+      for (const el of targets) {
+        if (!el.classList.contains('in')) io.observe(el);
+      }
     }
+
+    // Sticky-header glass effect: add body.nova-scrolled after 24px scroll
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        document.body.classList.toggle('nova-scrolled', window.scrollY > 24);
+        ticking = false;
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
   };
 
   if (document.readyState === 'loading') {

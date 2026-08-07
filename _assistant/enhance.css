@@ -1,108 +1,183 @@
-/* Nova UAT visual polish layer.
-   Layered over the mirrored globalion.in styles — never touches structure.
-   Rules cascade because they're loaded AFTER the site's own CSS via the
-   deferred <link> injected by build-assistant.mjs.
-
-   Design intent (Anthropic + Linear as references):
-   • Sections fade + rise into view on scroll
-   • Cards lift and gain a soft glow on hover
-   • Section headings sit on a more generous grid
-   • Interactive elements have consistent timing (220-280ms cubic-bezier)
-   • Subtle radial ambient glow behind the hero
+/* Nova UAT visual polish — v2, aggressive rework layer over globalion.in.
+   Design references: Anthropic, Linear, Vercel, Cursor.
+   Never edits HTML; only re-skins via CSS. Load order guarantees cascade wins.
 */
 
 :root {
   --nova-ease: cubic-bezier(.22, 1.2, .36, 1);
-  --nova-accent: #3b82f6;
-  --nova-accent-2: #93c5fd;
+  --nova-ease-2: cubic-bezier(.4, 0, .2, 1);
+  --nova-accent: #f59e0b;         /* matches Globalion's amber */
+  --nova-accent-hi: #fbbf24;
+  --nova-blue: #3b82f6;
+  --nova-blue-hi: #93c5fd;
 }
 
+/* Smooth scroll + a tinted native-look scrollbar */
 html { scroll-behavior: smooth; }
+* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.28); background-clip: padding-box; border: 2px solid transparent; }
+*::-webkit-scrollbar-track { background: transparent; }
 
-/* Reveal-on-scroll — added to major children by enhance.js.
-   Two states so we don't animate what's already on screen at load. */
+/* ==== Ambient background ==== */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(1400px 700px at 12% -12%, rgba(245, 158, 11, .10), transparent 60%),
+    radial-gradient(1000px 600px at 92% 8%, rgba(59, 130, 246, .07), transparent 55%),
+    radial-gradient(900px 900px at 50% 110%, rgba(147, 197, 253, .05), transparent 60%);
+}
+body::after {
+  /* very subtle noise so the gradients don't look flat */
+  content: "";
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  opacity: .03; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+}
+
+/* ==== Sticky header — becomes a glass bar as you scroll ==== */
+body.nova-scrolled header,
+body.nova-scrolled [class*="Header"]:not(main *):not(section *),
+body.nova-scrolled nav[class*="nav"] {
+  background: rgba(10, 12, 18, .75) !important;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+  transition: background .3s var(--nova-ease-2), border-color .3s var(--nova-ease-2);
+}
+
+/* ==== Reveal-on-scroll ==== */
 .nova-reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity .7s var(--nova-ease), transform .7s var(--nova-ease);
+  transform: translateY(28px);
+  transition: opacity .8s var(--nova-ease), transform .8s var(--nova-ease);
   will-change: opacity, transform;
 }
-.nova-reveal.in {
-  opacity: 1;
-  transform: none;
-}
+.nova-reveal.in { opacity: 1; transform: none; }
 
-/* Card-like blocks — hover lift with a soft blue glow.
-   The [class*="card"] selector catches Tailwind- and Next-style card
-   classnames from the mirror without needing to know exact hashes. */
-[class*="card"], [class*="Card"], article, [data-card] {
+/* ==== Cards — modern soft-shadow style with gradient border on hover ==== */
+main [class*="card"],
+main [class*="Card"],
+main article,
+main [data-card] {
+  position: relative;
   transition:
-    transform .28s var(--nova-ease),
-    box-shadow .28s var(--nova-ease),
-    border-color .28s var(--nova-ease);
+    transform .35s var(--nova-ease),
+    box-shadow .35s var(--nova-ease),
+    border-color .35s var(--nova-ease);
 }
-[class*="card"]:hover,
-[class*="Card"]:hover,
-article:hover:not(header article):not(nav article),
-[data-card]:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 32px -8px rgba(59, 130, 246, .18),
-              0 4px 12px -4px rgba(0, 0, 0, .25);
+main [class*="card"]:hover,
+main [class*="Card"]:hover,
+main article:hover,
+main [data-card]:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 20px 40px -12px rgba(245, 158, 11, .18),
+    0 8px 20px -8px rgba(0, 0, 0, .35);
+  border-color: rgba(245, 158, 11, .35) !important;
 }
+/* Soft glow ring that fades in on hover (creates the border-gradient look) */
+main [class*="card"]::after,
+main [class*="Card"]::after,
+main article::after {
+  content: "";
+  position: absolute; inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(245,158,11,.5), rgba(59,130,246,.4));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0;
+  transition: opacity .35s var(--nova-ease);
+  pointer-events: none;
+}
+main [class*="card"]:hover::after,
+main [class*="Card"]:hover::after,
+main article:hover::after { opacity: 1; }
 
-/* Links inside prose gain a subtle underline animation on hover.
-   Skip nav/header/footer links so we don't fight the site's own styling. */
-main a:not([class*="btn"]):not([class*="button"]):not(nav a):not(header a):not(footer a) {
-  background-image: linear-gradient(currentColor, currentColor);
-  background-size: 0 1px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: background-size .3s var(--nova-ease);
-}
-main a:not([class*="btn"]):not([class*="button"]):not(nav a):not(header a):not(footer a):hover {
-  background-size: 100% 1px;
-}
-
-/* Buttons — consistent lift on hover, press-down on click. */
+/* ==== Buttons — consistent micro-interactions ==== */
 button, a[role="button"], [class*="btn"], [class*="Button"] {
   transition:
     transform .18s var(--nova-ease),
     box-shadow .18s var(--nova-ease),
     background-color .18s var(--nova-ease),
-    color .18s var(--nova-ease);
+    color .18s var(--nova-ease),
+    filter .18s var(--nova-ease);
 }
 button:hover:not(:disabled), a[role="button"]:hover, [class*="btn"]:hover, [class*="Button"]:hover {
   transform: translateY(-1px);
+  filter: brightness(1.08);
 }
 button:active:not(:disabled), a[role="button"]:active, [class*="btn"]:active, [class*="Button"]:active {
   transform: translateY(0) scale(.985);
 }
 
-/* Section headings get a hair more letter-spacing negative for that
-   modern-editorial feel Linear and Anthropic use. Only large h1/h2 —
-   don't disturb small labels. */
-h1 { letter-spacing: -.02em; }
-h2 { letter-spacing: -.015em; }
-
-/* Ambient radial glow behind the hero — layers below content so no
-   accessibility impact. Uses the same blue as the mascot for
-   cross-surface cohesion. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(1200px 600px at 15% -10%, rgba(59, 130, 246, .08), transparent 60%),
-    radial-gradient(900px 500px at 90% 5%, rgba(147, 197, 253, .06), transparent 55%);
-  opacity: 1;
-  transition: opacity .5s;
+/* Primary CTA — richer amber glow */
+[class*="btn-primary"], [class*="Button-primary"],
+button[class*="primary"], a[class*="Talk to Us"], a[href="/contact"], a[href="/contact/"] {
+  box-shadow: 0 4px 20px -4px rgba(245, 158, 11, .35);
+}
+[class*="btn-primary"]:hover, [class*="Button-primary"]:hover,
+button[class*="primary"]:hover, a[class*="Talk to Us"]:hover,
+a[href="/contact"]:hover, a[href="/contact/"]:hover {
+  box-shadow: 0 8px 28px -4px rgba(245, 158, 11, .55) !important;
 }
 
-/* Respect users who don't want motion. */
+/* ==== Prose link underline animation ==== */
+main a:not([class*="btn"]):not([class*="button"]):not([class*="Button"]):not(nav a):not(header a):not(footer a):not([role="button"]) {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0 1.5px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size .35s var(--nova-ease), color .18s var(--nova-ease);
+}
+main a:not([class*="btn"]):not([class*="button"]):not([class*="Button"]):not(nav a):not(header a):not(footer a):not([role="button"]):hover {
+  background-size: 100% 1.5px;
+}
+
+/* ==== Typography rhythm ==== */
+h1 { letter-spacing: -.025em; }
+h2 { letter-spacing: -.02em; }
+h3 { letter-spacing: -.012em; }
+main p, main li { line-height: 1.65; }
+
+/* ==== Section dividers ==== */
+main > section + section,
+main > div > section + section {
+  position: relative;
+}
+main > section + section::before,
+main > div > section + section::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 80px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245,158,11,.35), transparent);
+  opacity: .7;
+}
+
+/* ==== Selection colour to match brand ==== */
+::selection { background: rgba(245, 158, 11, .35); color: #fff; }
+::-moz-selection { background: rgba(245, 158, 11, .35); color: #fff; }
+
+/* ==== Focus rings — visible and on-brand ==== */
+:focus-visible {
+  outline: 2px solid rgba(245, 158, 11, .8);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ==== Reduced motion ==== */
 @media (prefers-reduced-motion: reduce) {
-  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
   html { scroll-behavior: auto; }
   .nova-reveal { opacity: 1; transform: none; }
 }
