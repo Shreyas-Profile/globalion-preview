@@ -75,7 +75,13 @@ Link rule — CRITICAL:
   /insights/modernizing-legacy-without-the-big-bang/,
   /industries/, /government/, /engagement/, /careers/, /contact/, /about/.
 
-Length: max ~110 words total.
+HARD LENGTH LIMIT — this is strict:
+- Answer body: 45 words MAX (~3 short sentences).
+- Follow-up question: 15 words MAX.
+- Link: 1 line.
+- Total under 80 words. Being brief matters more than being complete.
+- If you would need more than 45 words for the answer, cut something.
+
 Language: same language as the user.
 
 Example — reply to "What does BuildOps do?":
@@ -154,7 +160,7 @@ export async function onRequestPost({ request, env }) {
         model,
         messages: [{ role: 'system', content: system }, ...trimmed],
         temperature: 0.3,
-        max_tokens: 900,
+        max_tokens: 1600,
       }),
       signal: controller.signal,
     });
