@@ -133,14 +133,145 @@ header [class*="Logo"], header a[href="/"] svg,
   color: var(--nova-fg-muted) !important;
 }
 
-/* --- Header goes glass on scroll --- */
-body.nova-scrolled header,
-body.nova-scrolled [class*="header"]:not(main *):not(section *):not(article *) {
+/* --- Header: turn into floating centered pill (Vercel/Linear style) --- */
+body > header,
+body > div > header,
+body header:first-of-type {
+  position: fixed !important;
+  top: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: auto !important;
+  max-width: calc(100% - 32px) !important;
   background: var(--nova-glass) !important;
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border-bottom: 1px solid var(--nova-line) !important;
-  transition: background .3s var(--nova-ease), border-color .3s var(--nova-ease);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--nova-line) !important;
+  border-radius: 999px !important;
+  padding: 6px 8px 6px 20px !important;
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, .5);
+  z-index: 100;
+  transition: all .3s var(--nova-ease);
+}
+body > header > *, body > div > header > *, body header:first-of-type > * {
+  border: none !important;
+}
+/* Give the page top-padding so the pill doesn't cover content */
+body { padding-top: 24px; }
+body.nova-scrolled > header,
+body.nova-scrolled > div > header,
+body.nova-scrolled header:first-of-type {
+  padding: 4px 8px 4px 16px !important;
+  border-color: var(--nova-accent) !important;
+  box-shadow: 0 12px 40px -8px rgba(99, 102, 241, .3);
+}
+
+/* --- Scroll progress bar (top of viewport) --- */
+.nova-progress {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: linear-gradient(90deg, var(--nova-accent), var(--nova-cyan));
+  z-index: 2147481000;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform .1s linear;
+  pointer-events: none;
+  box-shadow: 0 0 12px var(--nova-accent);
+}
+
+/* --- Injected tabbed explorer section --- */
+.nova-tabs {
+  max-width: 1200px;
+  margin: 96px auto;
+  padding: 0 24px;
+  animation: nova-fade-up .8s var(--nova-ease) both;
+}
+.nova-tabs h2 {
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  margin: 0 0 8px 0;
+  color: var(--nova-fg);
+}
+.nova-tabs p.nova-sub {
+  color: var(--nova-fg-muted);
+  font-size: 16px;
+  margin: 0 0 32px 0;
+}
+.nova-tab-strip {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--nova-card);
+  border: 1px solid var(--nova-line);
+  border-radius: 999px;
+  margin-bottom: 32px;
+}
+.nova-tab {
+  padding: 8px 20px;
+  background: transparent; border: none;
+  color: var(--nova-fg-muted);
+  font: 500 14px inherit;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .25s var(--nova-ease);
+}
+.nova-tab:hover { color: var(--nova-fg); }
+.nova-tab.active {
+  background: linear-gradient(135deg, var(--nova-accent), var(--nova-accent-hi));
+  color: #fff;
+  box-shadow: 0 4px 16px -4px rgba(99, 102, 241, .5);
+}
+.nova-tab-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+.nova-tab-card {
+  padding: 24px;
+  background: var(--nova-card);
+  border: 1px solid var(--nova-line);
+  border-radius: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--nova-fg);
+  transition: all .35s var(--nova-ease);
+  position: relative;
+  overflow: hidden;
+}
+.nova-tab-card::before {
+  content: ""; position: absolute; inset: -1px;
+  border-radius: inherit; padding: 1px;
+  background: linear-gradient(135deg, var(--nova-accent), var(--nova-cyan));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0; transition: opacity .3s;
+  pointer-events: none;
+}
+.nova-tab-card:hover {
+  transform: translateY(-4px);
+  background: var(--nova-card-hover);
+  box-shadow: var(--nova-shadow);
+}
+.nova-tab-card:hover::before { opacity: 1; }
+.nova-tab-card h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  color: var(--nova-fg);
+}
+.nova-tab-card p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: var(--nova-fg-muted);
+  line-height: 1.55;
+}
+.nova-tab-card .arrow {
+  color: var(--nova-accent);
+  font-weight: 600;
+  font-size: 13px;
+}
+@keyframes nova-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
 }
 
 /* --- Cards --- */
