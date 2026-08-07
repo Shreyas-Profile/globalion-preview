@@ -49,53 +49,95 @@
     if (section.querySelector('[data-nova-product]')) return;
 
     // Inject a fresh grid at the end of the section
+    // Simple SVG icon per product theme
+    const ICONS = {
+      cmplihr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h11"/></svg>',
+      social: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h4l3-9 4 18 3-9h6"/></svg>',
+      build: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>',
+      support: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>',
+      interview: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v9M4 12v9M14 3v18M10 3v18M2 3h20"/></svg>',
+      btrfly: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6 6 6 12 12 22c6-10 6-16 0-20z"/></svg>',
+      medha: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5a2 2 0 0 0 1 1.7c1.4.8 3.4 1.3 5 1.3s3.6-.5 5-1.3A2 2 0 0 0 18 17v-5"/></svg>',
+    };
+    const iconFor = (title) => {
+      const t = title.toLowerCase();
+      if (t.startsWith('cmpli')) return ICONS.cmplihr;
+      if (t.startsWith('social')) return ICONS.social;
+      if (t.startsWith('build')) return ICONS.build;
+      if (t.startsWith('support')) return ICONS.support;
+      if (t.startsWith('interview')) return ICONS.interview;
+      if (t.startsWith('btr')) return ICONS.btrfly;
+      if (t.startsWith('medha')) return ICONS.medha;
+      return ICONS.build;
+    };
+
     const wrap = document.createElement('div');
+    wrap.className = 'nova-product-grid';
     wrap.setAttribute('data-nova-product', '');
-    wrap.style.cssText = `
-      max-width: 1200px; margin: 32px auto 0; padding: 0 24px;
-      display: grid; gap: 16px;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    `;
     for (const p of PRODUCTS) {
       const a = document.createElement('a');
+      a.className = 'nova-product-card';
       a.href = p.href;
-      a.style.cssText = `
-        display: block; padding: 24px;
-        background: rgba(255,255,255,.03);
-        border: 1px solid rgba(255,255,255,.08);
-        border-radius: 14px;
-        text-decoration: none; color: inherit;
-        transition: transform .25s ease, border-color .25s ease, background .25s ease;
-      `;
-      a.addEventListener('mouseenter', () => {
-        a.style.transform = 'translateY(-3px)';
-        a.style.borderColor = 'rgba(245,158,11,.5)';
-        a.style.background = 'rgba(255,255,255,.05)';
-      });
-      a.addEventListener('mouseleave', () => {
-        a.style.transform = '';
-        a.style.borderColor = 'rgba(255,255,255,.08)';
-        a.style.background = 'rgba(255,255,255,.03)';
-      });
       a.innerHTML = `
-        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#f59e0b;margin-bottom:8px"></div>
-        <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px"></div>
-        <div style="font-size:14px;color:#94a3b8;line-height:1.5;margin-bottom:12px"></div>
-        <div style="font-size:13px;color:#f59e0b;font-weight:500">Learn more →</div>
+        <div class="icon">${iconFor(p.title)}</div>
+        <div class="tag"></div>
+        <div class="title"></div>
+        <div class="desc"></div>
+        <div class="more">Learn more <span>→</span></div>
       `;
-      a.children[0].textContent = p.tag;
-      a.children[1].textContent = p.title;
-      a.children[2].textContent = p.desc;
+      a.querySelector('.tag').textContent = p.tag;
+      a.querySelector('.title').textContent = p.title;
+      a.querySelector('.desc').textContent = p.desc;
       wrap.appendChild(a);
     }
     section.appendChild(wrap);
-    // Nudge the section to fit taller content
     section.style.paddingBottom = '80px';
+  };
+
+  /* Right-side floating scroll navigator — dots per major section */
+  const buildRail = () => {
+    const main = document.querySelector('main');
+    if (!main) return;
+    const sections = [...main.querySelectorAll('section')];
+    const items = sections.map((s) => {
+      const h = s.querySelector('h1, h2') || s.querySelector('h3');
+      const label = (h?.textContent || '').trim().split('\n')[0].slice(0, 26);
+      return { el: s, label };
+    }).filter(i => i.label && !/nova-tabs/.test(i.el.className));
+    if (items.length < 2) return;
+
+    const rail = document.createElement('nav');
+    rail.className = 'nova-rail';
+    rail.setAttribute('aria-label', 'Section navigation');
+    const buttons = items.map((it, idx) => {
+      const b = document.createElement('button');
+      b.className = 'nova-rail-dot';
+      b.type = 'button';
+      b.innerHTML = `<span class="nova-rail-label">${it.label.replace(/[<>&]/g, '')}</span>`;
+      b.setAttribute('title', it.label);
+      b.addEventListener('click', () => {
+        it.el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      rail.appendChild(b);
+      return b;
+    });
+    document.body.appendChild(rail);
+
+    // Highlight the section currently near the top
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          const idx = items.findIndex(i => i.el === e.target);
+          buttons.forEach((b, i) => b.classList.toggle('active', i === idx));
+        }
+      }
+    }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
+    items.forEach(i => io.observe(i.el));
   };
 
   const ready = () => {
     fillProductCarousel();
+    buildRail();
     const btn = document.createElement('button');
     btn.className = 'nova-theme-toggle';
     btn.type = 'button';

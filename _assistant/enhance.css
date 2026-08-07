@@ -63,7 +63,150 @@
   color: #17172a;
 }
 
+/* ============================================================
+   Right-side floating section navigator (Linear/Vercel style)
+   Dot per section, label expands on hover, click jumps to it.
+   ============================================================ */
+.nova-rail {
+  position: fixed;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
+  z-index: 2147481500;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(15, 15, 18, .55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, .06);
+  border-radius: 999px;
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .6);
+  font: 500 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.nova-rail-dot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 999px;
+  color: #94a3b8;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  transition: all .22s ease;
+  font: inherit;
+  white-space: nowrap;
+}
+.nova-rail-dot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: .5;
+  transition: all .22s ease;
+  flex-shrink: 0;
+}
+.nova-rail-dot:hover {
+  color: #f59e0b;
+  background: rgba(245, 158, 11, .1);
+  padding-right: 14px;
+}
+.nova-rail-dot:hover::before { opacity: 1; box-shadow: 0 0 0 3px rgba(245, 158, 11, .2); }
+.nova-rail-dot .nova-rail-label {
+  max-width: 0;
+  overflow: hidden;
+  transition: max-width .28s cubic-bezier(.22, 1.2, .36, 1);
+}
+.nova-rail-dot:hover .nova-rail-label { max-width: 200px; padding-right: 4px; }
+.nova-rail-dot.active { color: #f59e0b; }
+.nova-rail-dot.active::before { opacity: 1; box-shadow: 0 0 0 3px rgba(245, 158, 11, .18); }
+@media (max-width: 900px) { .nova-rail { display: none; } }
+
+/* ============================================================
+   Polished product cards (replaces the plain injected grid)
+   ============================================================ */
+.nova-product-grid {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding: 0 24px;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.nova-product-card {
+  position: relative;
+  padding: 24px 22px;
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.02));
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 18px;
+  text-decoration: none;
+  color: #f8fafc;
+  overflow: hidden;
+  transition: transform .3s cubic-bezier(.22,1.2,.36,1),
+              border-color .3s ease, background .3s ease;
+}
+.nova-product-card::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, #f59e0b, #a78bfa, #22d3ee);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+.nova-product-card:hover {
+  transform: translateY(-6px);
+  background: linear-gradient(180deg, rgba(245,158,11,.06), rgba(255,255,255,.02));
+}
+.nova-product-card:hover::before { opacity: 1; }
+.nova-product-card .icon {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(245, 158, 11, .12);
+  color: #f59e0b;
+  margin-bottom: 14px;
+}
+.nova-product-card .icon svg { width: 22px; height: 22px; }
+.nova-product-card .tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #fbbf24;
+  margin-bottom: 6px;
+}
+.nova-product-card .title {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  letter-spacing: -.015em;
+}
+.nova-product-card .desc {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #cbd5e1;
+  margin-bottom: 16px;
+}
+.nova-product-card .more {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f59e0b;
+  display: inline-flex; align-items: center; gap: 4px;
+  transition: gap .22s ease;
+}
+.nova-product-card:hover .more { gap: 8px; }
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .nova-theme-toggle { transition: none; }
+  .nova-theme-toggle, .nova-rail-dot, .nova-product-card { transition: none; }
+  .nova-rail-dot .nova-rail-label { max-width: 200px; }
 }
