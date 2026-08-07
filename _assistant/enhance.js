@@ -25,7 +25,77 @@
   })();
   applyTheme(saved);
 
+  /* Fill in the empty 'Built In-House. Deployed at Scale.' carousel.
+     The mirror captured this section with just the heading + arrows —
+     the actual cards were React-driven and never made it into the
+     static HTML. Injecting the seven products directly. */
+  const PRODUCTS = [
+    { title: 'cmplihr.ai',        tag: 'HR & COMPLIANCE',   desc: 'AI-powered labour law & HR compliance platform',    href: '/ai-products/cmplihr/' },
+    { title: 'Social Listening AI', tag: 'POLITICAL & PR',   desc: 'Public opinion & sentiment intelligence at scale',   href: '/ai-products/social-listening/' },
+    { title: 'BuildOps',          tag: 'ENGINEERING TEAMS', desc: 'AI-assisted software engineering platform',           href: '/ai-products/buildops/' },
+    { title: 'SupportOps',        tag: 'IT OPERATIONS',     desc: 'AI-powered application support & IT operations',      href: '/ai-products/supportops/' },
+    { title: 'InterviewPanda',    tag: 'TALENT & HIRING',   desc: 'AI-powered interview prep & candidate assessment',    href: '/ai-products/interviewpanda/' },
+    { title: 'BTRFLY',            tag: 'CAREER · WOMEN',    desc: 'AI career acceleration for women returning to work',  href: '/ai-products/btrfly/' },
+    { title: 'MedhaVerse',        tag: 'EDUCATION',         desc: 'Adaptive learning for K-12 & higher education',       href: '/ai-products/medhavarse/' },
+  ];
+  const fillProductCarousel = () => {
+    // Find the "Built In-House" section by heading text
+    const headings = [...document.querySelectorAll('h2, h3')];
+    const target = headings.find(h => /Built In-House/i.test(h.textContent || ''));
+    if (!target) return;
+    const section = target.closest('section');
+    if (!section) return;
+    // Skip if already filled by React (unlikely but safe)
+    if (section.querySelector('[data-nova-product]')) return;
+
+    // Inject a fresh grid at the end of the section
+    const wrap = document.createElement('div');
+    wrap.setAttribute('data-nova-product', '');
+    wrap.style.cssText = `
+      max-width: 1200px; margin: 32px auto 0; padding: 0 24px;
+      display: grid; gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    `;
+    for (const p of PRODUCTS) {
+      const a = document.createElement('a');
+      a.href = p.href;
+      a.style.cssText = `
+        display: block; padding: 24px;
+        background: rgba(255,255,255,.03);
+        border: 1px solid rgba(255,255,255,.08);
+        border-radius: 14px;
+        text-decoration: none; color: inherit;
+        transition: transform .25s ease, border-color .25s ease, background .25s ease;
+      `;
+      a.addEventListener('mouseenter', () => {
+        a.style.transform = 'translateY(-3px)';
+        a.style.borderColor = 'rgba(245,158,11,.5)';
+        a.style.background = 'rgba(255,255,255,.05)';
+      });
+      a.addEventListener('mouseleave', () => {
+        a.style.transform = '';
+        a.style.borderColor = 'rgba(255,255,255,.08)';
+        a.style.background = 'rgba(255,255,255,.03)';
+      });
+      a.innerHTML = `
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;color:#f59e0b;margin-bottom:8px"></div>
+        <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px"></div>
+        <div style="font-size:14px;color:#94a3b8;line-height:1.5;margin-bottom:12px"></div>
+        <div style="font-size:13px;color:#f59e0b;font-weight:500">Learn more →</div>
+      `;
+      a.children[0].textContent = p.tag;
+      a.children[1].textContent = p.title;
+      a.children[2].textContent = p.desc;
+      wrap.appendChild(a);
+    }
+    section.appendChild(wrap);
+    // Nudge the section to fit taller content
+    section.style.paddingBottom = '80px';
+  };
+
   const ready = () => {
+    fillProductCarousel();
     const btn = document.createElement('button');
     btn.className = 'nova-theme-toggle';
     btn.type = 'button';
