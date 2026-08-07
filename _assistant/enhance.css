@@ -1,470 +1,55 @@
-/* Nova UAT visual polish — v3 FULL REPAINT.
-   References: Vercel (gradient blobs + serif hero), Linear (subtle glass),
-   Cursor (electric accent), Anthropic (warm cream light mode).
-   Everything CSS-only, layered over the mirrored globalion.in HTML.
+/* Nova UAT: minimal enhancement layer.
+   Goal is to MATCH globalion.in exactly — only the chatbot widget +
+   theme toggle are ours. Everything else lives in the mirror HTML.
+   Nothing overrides site colours, no hue-shifts, no forced palette.
 */
 
-:root, [data-theme="dark"] {
-  --nova-ease: cubic-bezier(.22, 1.2, .36, 1);
-  --nova-bg-0:      #050914;
-  --nova-bg-1:      #0a1128;
-  --nova-fg:        #e6edff;
-  --nova-fg-muted:  #94a3c4;
-  --nova-accent:    #6366f1;   /* indigo — for bg/fills */
-  --nova-accent-hi: #a78bfa;   /* violet */
-  --nova-accent-text: #c7d2fe; /* indigo-200 — BRIGHTER for text on dark */
-  --nova-cyan:      #22d3ee;
-  --nova-line:      rgba(148, 163, 196, .12);
-  --nova-glass:     rgba(10, 17, 40, .72);
-  --nova-card:      rgba(255, 255, 255, .04);
-  --nova-card-hover:rgba(99, 102, 241, .08);
-  --nova-shadow:    0 24px 48px -16px rgba(99, 102, 241, .28);
-}
-
-[data-theme="light"] {
-  --nova-bg-0:      #f8f5ef;
-  --nova-bg-1:      #ede8dc;
-  --nova-fg:        #17172a;
-  --nova-fg-muted:  #5a5d78;
-  --nova-accent:    #4338ca;   /* darker indigo for contrast on cream */
-  --nova-accent-hi: #7c3aed;
-  --nova-accent-text: #4338ca; /* dark indigo reads well on cream */
-  --nova-cyan:      #0891b2;
-  --nova-line:      rgba(23, 23, 42, .10);
-  --nova-glass:     rgba(248, 245, 239, .78);
-  --nova-card:      #ffffff;
-  --nova-card-hover:#fbfaf5;
-  --nova-shadow:    0 24px 48px -16px rgba(67, 56, 202, .22);
-}
-
-/* Auto = respect OS if user hasn't picked */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    --nova-bg-0:      #f8f5ef;
-    --nova-bg-1:      #ede8dc;
-    --nova-fg:        #17172a;
-    --nova-fg-muted:  #5a5d78;
-    --nova-accent:    #4338ca;
-    --nova-accent-hi: #7c3aed;
-    --nova-cyan:      #0891b2;
-    --nova-line:      rgba(23, 23, 42, .10);
-    --nova-glass:     rgba(248, 245, 239, .78);
-    --nova-card:      #ffffff;
-    --nova-card-hover:#fbfaf5;
-    --nova-shadow:    0 24px 48px -16px rgba(67, 56, 202, .22);
-  }
-}
-
-html { scroll-behavior: smooth; }
-
-/* Force our palette onto the mirrored site */
-html, body {
-  background: var(--nova-bg-0) !important;
-  color: var(--nova-fg) !important;
-  transition: background-color .5s var(--nova-ease), color .5s var(--nova-ease);
-}
-
-/* --- HUGE animated gradient blob background (Vercel-style) --- */
-body::before {
-  content: "";
-  position: fixed; inset: -20%;
-  z-index: -3; pointer-events: none;
-  background:
-    radial-gradient(closest-side at 20% 20%, var(--nova-accent) 0%, transparent 55%),
-    radial-gradient(closest-side at 82% 8%,  var(--nova-cyan)   0%, transparent 55%),
-    radial-gradient(closest-side at 60% 92%, var(--nova-accent-hi) 0%, transparent 55%);
-  opacity: .22;
-  filter: blur(80px);
-  animation: nova-drift 22s ease-in-out infinite alternate;
-}
-@keyframes nova-drift {
-  0%   { transform: translate3d(0,0,0) scale(1); }
-  50%  { transform: translate3d(-3%, 2%, 0) scale(1.05); }
-  100% { transform: translate3d(3%, -1%, 0) scale(0.98); }
-}
-body::after {
-  /* subtle grain */
-  content: "";
-  position: fixed; inset: 0; z-index: -2; pointer-events: none;
-  opacity: .04; mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
-}
-[data-theme="light"] body::before { opacity: .35; }
-
-/* --- Recolour the amber Tailwind classes to our indigo palette --- */
-[class*="text-amber"], [class*="text-yellow"], [class*="text-orange"] {
-  color: var(--nova-accent) !important;
-}
-[class*="bg-amber"], [class*="bg-yellow"], [class*="bg-orange"] {
-  background-color: var(--nova-accent) !important;
-  color: #fff !important;
-}
-[class*="border-amber"], [class*="border-yellow"], [class*="border-orange"] {
-  border-color: var(--nova-accent) !important;
-}
-/* Inline-style amber overrides — catch the site's hex-coded golds */
-[style*="rgb(232, 163, 71)"],
-[style*="rgb(245, 158, 11)"],
-[style*="rgb(251, 191, 36)"],
-[style*="#f59e0b"], [style*="#fbbf24"], [style*="#e8a347"], [style*="#f5a623"] {
-  color: var(--nova-accent) !important;
-  background-color: transparent !important;
-}
-/* Recolour amber text on the hero via specific bg gradient overrides —
-   filter: hue-rotate was breaking the Talk to Us button (rotated its
-   indigo gradient into green). We accept that some amber accents on the
-   inner mockup panel will remain; the overall palette shift is enough. */
-[class*="text-gradient"], [class*="gradient-text"],
-h1 [class*="from-amber"], h1 [class*="to-amber"] {
-  background: linear-gradient(135deg, var(--nova-accent), var(--nova-accent-hi)) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
-}
-/* The gradient hero text is a <span> — target common wrappers */
-main h1 span[class*="text-"], main h1 span[style*="gradient"] {
-  color: var(--nova-accent) !important;
-}
-
-/* Hide empty sections created by stripped Next.js React components.
-   These sections rendered as invisible containers in the mirror
-   because their contents were React-only. Kill any section with no
-   real content so the page doesn't have massive dead zones. */
-main > section:empty,
-main > div > section:empty,
-main > section > div:empty {
-  display: none !important;
-}
-/* Also collapse sections that only contain whitespace/wrappers with
-   no meaningful text — this is what causes the huge dead zone
-   between hero and footer on the homepage. */
-/* Common Tailwind neutral overrides — force the mirror to use our vars */
-[class*="bg-black"], [class*="bg-slate-9"], [class*="bg-neutral-9"], [class*="bg-zinc-9"], [class*="bg-gray-9"] {
-  background-color: transparent !important;
-}
-[data-theme="light"] [class*="text-white"], [data-theme="light"] [class*="text-slate-1"],
-[data-theme="light"] [class*="text-neutral-1"] {
-  color: var(--nova-fg) !important;
-}
-[data-theme="light"] [class*="text-slate-4"], [data-theme="light"] [class*="text-slate-3"],
-[data-theme="light"] [class*="text-neutral-4"] {
-  color: var(--nova-fg-muted) !important;
-}
-
-/* --- Header: turn into floating centered pill (Vercel/Linear style) --- */
-body > header,
-body > div > header,
-body header:first-of-type {
-  position: fixed !important;
-  top: 16px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: auto !important;
-  max-width: calc(100% - 32px) !important;
-  background: var(--nova-glass) !important;
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--nova-line) !important;
-  border-radius: 999px !important;
-  padding: 6px 8px 6px 20px !important;
-  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, .5);
-  z-index: 100;
-  transition: all .3s var(--nova-ease);
-}
-body > header > *, body > div > header > *, body header:first-of-type > * {
-  border: none !important;
-}
-/* Give the page top-padding so the pill doesn't cover content */
-body { padding-top: 24px; }
-body.nova-scrolled > header,
-body.nova-scrolled > div > header,
-body.nova-scrolled header:first-of-type {
-  padding: 4px 8px 4px 16px !important;
-  border-color: var(--nova-accent) !important;
-  box-shadow: 0 12px 40px -8px rgba(99, 102, 241, .3);
-}
-
-/* --- Scroll progress bar (top of viewport) --- */
-.nova-progress {
-  position: fixed; top: 0; left: 0; height: 3px;
-  background: linear-gradient(90deg, var(--nova-accent), var(--nova-cyan));
-  z-index: 2147481000;
-  transform-origin: left center;
-  transform: scaleX(0);
-  transition: transform .1s linear;
-  pointer-events: none;
-  box-shadow: 0 0 12px var(--nova-accent);
-}
-
-/* --- Injected tabbed explorer section --- */
-.nova-tabs {
-  max-width: 1200px;
-  margin: 96px auto;
-  padding: 0 24px;
-  animation: nova-fade-up .8s var(--nova-ease) both;
-}
-.nova-tabs h2 {
-  font-size: clamp(28px, 4vw, 44px);
-  font-weight: 700;
-  letter-spacing: -.02em;
-  margin: 0 0 8px 0;
-  color: var(--nova-fg);
-}
-.nova-tabs p.nova-sub {
-  color: var(--nova-fg-muted);
-  font-size: 16px;
-  margin: 0 0 32px 0;
-}
-.nova-tab-strip {
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--nova-card);
-  border: 1px solid var(--nova-line);
-  border-radius: 999px;
-  margin-bottom: 32px;
-}
-.nova-tab {
-  padding: 8px 20px;
-  background: transparent; border: none;
-  color: var(--nova-fg-muted);
-  font: 500 14px inherit;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: all .25s var(--nova-ease);
-}
-.nova-tab:hover { color: var(--nova-fg); }
-.nova-tab.active {
-  background: linear-gradient(135deg, var(--nova-accent), var(--nova-accent-hi));
-  color: #fff;
-  box-shadow: 0 4px 16px -4px rgba(99, 102, 241, .5);
-}
-.nova-tab-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-}
-.nova-tab-card {
-  padding: 24px;
-  background: var(--nova-card);
-  border: 1px solid var(--nova-line);
-  border-radius: 16px;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--nova-fg);
-  transition: all .35s var(--nova-ease);
-  position: relative;
-  overflow: hidden;
-}
-.nova-tab-card::before {
-  content: ""; position: absolute; inset: -1px;
-  border-radius: inherit; padding: 1px;
-  background: linear-gradient(135deg, var(--nova-accent), var(--nova-cyan));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-  opacity: 0; transition: opacity .3s;
-  pointer-events: none;
-}
-.nova-tab-card:hover {
-  transform: translateY(-4px);
-  background: var(--nova-card-hover);
-  box-shadow: var(--nova-shadow);
-}
-.nova-tab-card:hover::before { opacity: 1; }
-.nova-tab-card h3 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-  color: var(--nova-fg);
-}
-.nova-tab-card p {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: var(--nova-fg-muted);
-  line-height: 1.55;
-}
-.nova-tab-card .arrow {
-  color: var(--nova-accent);
-  font-weight: 600;
-  font-size: 13px;
-}
-@keyframes nova-fade-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* --- Cards --- */
-main [class*="card"], main [class*="Card"], main article, main [data-card] {
-  position: relative;
-  background: var(--nova-card) !important;
-  border: 1px solid var(--nova-line) !important;
-  border-radius: 16px;
-  transition:
-    transform .35s var(--nova-ease),
-    box-shadow .35s var(--nova-ease),
-    border-color .35s var(--nova-ease),
-    background .35s var(--nova-ease);
-}
-main [class*="card"]:hover, main [class*="Card"]:hover,
-main article:hover, main [data-card]:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--nova-shadow);
-  border-color: var(--nova-accent) !important;
-  background: var(--nova-card-hover) !important;
-}
-main [class*="card"]::before, main [class*="Card"]::before, main article::before {
-  content: "";
-  position: absolute; inset: -1px;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--nova-accent), var(--nova-cyan));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor; mask-composite: exclude;
-  opacity: 0;
-  transition: opacity .35s var(--nova-ease);
-  pointer-events: none;
-}
-main [class*="card"]:hover::before, main [class*="Card"]:hover::before,
-main article:hover::before { opacity: 1; }
-
-/* --- Buttons --- */
-button, a[role="button"], [class*="btn"], [class*="Button"] {
-  transition:
-    transform .18s var(--nova-ease),
-    box-shadow .18s var(--nova-ease),
-    filter .18s var(--nova-ease);
-}
-button:hover:not(:disabled), a[role="button"]:hover, [class*="btn"]:hover, [class*="Button"]:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-}
-button:active:not(:disabled), a[role="button"]:active, [class*="btn"]:active, [class*="Button"]:active {
-  transform: translateY(0) scale(.985);
-}
-a[href="/contact"], a[href="/contact/"], [class*="Talk"], [class*="talk-to-us"] {
-  background: linear-gradient(135deg, var(--nova-accent), var(--nova-accent-hi)) !important;
-  color: #fff !important;
-  box-shadow: 0 8px 24px -8px rgba(99, 102, 241, .55);
-}
-a[href="/contact"]:hover, a[href="/contact/"]:hover, [class*="Talk"]:hover {
-  box-shadow: 0 12px 36px -8px rgba(99, 102, 241, .75) !important;
-}
-
-/* Kill Tailwind's --accent variable (source of the GREEN hero button).
-   The site's hero CTA uses .bg-accent + .text-[#0a0a0b] wired through
-   this CSS var; overriding it here forces every .bg-accent /
-   .text-accent element to use indigo. */
-:root, html, body {
-  --accent: #6366f1 !important;
-  --accent-light: #a78bfa !important;
-}
-.bg-accent, [class*="bg-accent"] {
-  background-color: var(--nova-accent) !important;
-  background-image: linear-gradient(135deg, var(--nova-accent), var(--nova-accent-hi)) !important;
-  color: #fff !important;
-  box-shadow: 0 8px 24px -8px rgba(99, 102, 241, .5) !important;
-}
-.bg-accent:hover, [class*="bg-accent"]:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 12px 32px -8px rgba(99, 102, 241, .7) !important;
-}
-/* Text colours use the BRIGHTER token so pills / labels are readable
-   on the near-black card backgrounds. */
-[class*="text-accent"] { color: var(--nova-accent-text) !important; }
-[class*="border-accent"] { border-color: var(--nova-accent) !important; }
-/* Industry-tag pills: give them a subtle indigo tint on the fill so
-   the outlined-pill style has more presence than pure text on black. */
-main a[class*="rounded-full"], main span[class*="rounded-full"] {
-  background: rgba(99, 102, 241, .12) !important;
-  color: #dbeafe !important;
-  border-color: rgba(99, 102, 241, .4) !important;
-}
-main a[class*="rounded-full"]:hover {
-  background: rgba(99, 102, 241, .22) !important;
-  color: #fff !important;
-}
-
-/* --- Prose link underline --- */
-main a:not([class*="btn"]):not([class*="button"]):not([class*="Button"]):not(nav a):not(header a):not(footer a):not([role="button"]) {
-  color: var(--nova-accent) !important;
-  background-image: linear-gradient(currentColor, currentColor);
-  background-size: 0 1.5px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: background-size .35s var(--nova-ease);
-}
-main a:not([class*="btn"]):not([class*="button"]):not([class*="Button"]):not(nav a):not(header a):not(footer a):not([role="button"]):hover {
-  background-size: 100% 1.5px;
-}
-
-/* --- Typography --- */
-h1 { letter-spacing: -.028em; }
-h2 { letter-spacing: -.022em; }
-h3 { letter-spacing: -.014em; }
-main p, main li { line-height: 1.65; }
-
-/* --- Reveal on scroll — ADDITIVE so content stays visible if the
-   observer never fires (Puppeteer, fast scrolls, JS disabled…) --- */
-.nova-reveal.in {
-  animation: nova-fade-up .7s var(--nova-ease) both;
-}
-@keyframes nova-fade-up {
-  from { opacity: 0; transform: translateY(28px); }
-  to   { opacity: 1; transform: none; }
-}
-
-/* --- Section dividers --- */
-main > section + section::before,
-main > div > section + section::before {
-  content: "";
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  width: 100px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--nova-accent), transparent);
-  opacity: .6;
-}
-main > section + section, main > div > section + section { position: relative; }
-
-/* --- Custom scrollbar --- */
-* { scrollbar-width: thin; scrollbar-color: var(--nova-accent) transparent; }
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--nova-accent), var(--nova-accent-hi));
-  border-radius: 6px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-*::-webkit-scrollbar-track { background: transparent; }
-
-/* --- Selection + focus --- */
-::selection { background: var(--nova-accent); color: #fff; }
-:focus-visible { outline: 2px solid var(--nova-accent); outline-offset: 3px; border-radius: 6px; }
-
-/* ============================================================
-   THEME TOGGLE — floating pill, top-right, above the chatbot
-   ============================================================ */
+/* Theme toggle (floating pill, bottom-left) — tiny, out of the way */
 .nova-theme-toggle {
-  /* Bottom-left corner so it doesn't fight the site's Talk-to-Us button. */
-  position: fixed; bottom: 24px; left: 24px; z-index: 2147482000;
-  display: inline-flex; align-items: center; gap: 6px;
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  z-index: 2147482000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 8px 12px 8px 10px;
-  background: var(--nova-glass);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--nova-line);
+  background: rgba(20, 20, 24, .8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, .1);
   border-radius: 999px;
-  color: var(--nova-fg);
+  color: #e5e7eb;
   font: 500 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   cursor: pointer;
-  box-shadow: 0 8px 24px -12px rgba(0,0,0,.4);
-  transition: all .2s var(--nova-ease);
+  box-shadow: 0 8px 24px -12px rgba(0, 0, 0, .5);
+  transition: transform .18s ease, border-color .18s ease;
 }
-.nova-theme-toggle:hover { transform: translateY(-1px); border-color: var(--nova-accent); }
-.nova-theme-toggle svg { width: 14px; height: 14px; }
+.nova-theme-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(245, 158, 11, .5);
+}
+.nova-theme-toggle svg {
+  width: 14px;
+  height: 14px;
+}
 
-/* --- Reduced motion --- */
+/* Light-theme overrides — only when user explicitly picks Light */
+[data-theme="light"] {
+  --nova-light-bg: #f8f5ef;
+  --nova-light-fg: #17172a;
+}
+[data-theme="light"] body {
+  background: var(--nova-light-bg) !important;
+  color: var(--nova-light-fg) !important;
+}
+[data-theme="light"] .nova-theme-toggle {
+  background: rgba(255, 255, 255, .9);
+  border-color: rgba(0, 0, 0, .1);
+  color: #17172a;
+}
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
-  html { scroll-behavior: auto; }
-  .nova-reveal { opacity: 1; transform: none; }
-  body::before { animation: none; }
+  .nova-theme-toggle { transition: none; }
 }
