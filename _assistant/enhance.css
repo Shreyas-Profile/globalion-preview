@@ -388,10 +388,15 @@ h2 { letter-spacing: -.022em; }
 h3 { letter-spacing: -.014em; }
 main p, main li { line-height: 1.65; }
 
-/* --- Reveal on scroll --- */
-.nova-reveal { opacity: 0; transform: translateY(28px);
-  transition: opacity .8s var(--nova-ease), transform .8s var(--nova-ease); }
-.nova-reveal.in { opacity: 1; transform: none; }
+/* --- Reveal on scroll — ADDITIVE so content stays visible if the
+   observer never fires (Puppeteer, fast scrolls, JS disabled…) --- */
+.nova-reveal.in {
+  animation: nova-fade-up .7s var(--nova-ease) both;
+}
+@keyframes nova-fade-up {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: none; }
+}
 
 /* --- Section dividers --- */
 main > section + section::before,
