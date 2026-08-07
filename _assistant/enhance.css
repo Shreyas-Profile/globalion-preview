@@ -100,6 +100,26 @@ body::after {
 [class*="border-amber"], [class*="border-yellow"], [class*="border-orange"] {
   border-color: var(--nova-accent) !important;
 }
+/* Inline-style amber overrides — catch the site's hex-coded golds */
+[style*="rgb(232, 163, 71)"],
+[style*="rgb(245, 158, 11)"],
+[style*="rgb(251, 191, 36)"],
+[style*="#f59e0b"], [style*="#fbbf24"], [style*="#e8a347"], [style*="#f5a623"] {
+  color: var(--nova-accent) !important;
+  background-color: transparent !important;
+}
+/* Hue-shift the WHOLE hero region so the amber gradient text becomes indigo.
+   Only affects colours; text and shapes untouched. */
+main > section:first-of-type,
+main > div > section:first-of-type,
+[class*="hero"], [class*="Hero"] {
+  filter: hue-rotate(210deg) saturate(1.05);
+}
+/* Also shift the product mockup panel and the logo mark */
+header [class*="Logo"], header a[href="/"] svg,
+[class*="mock"], [class*="Mock"] {
+  filter: hue-rotate(210deg) saturate(1.05);
+}
 /* Common Tailwind neutral overrides — force the mirror to use our vars */
 [class*="bg-black"], [class*="bg-slate-9"], [class*="bg-neutral-9"], [class*="bg-zinc-9"], [class*="bg-gray-9"] {
   background-color: transparent !important;
@@ -234,7 +254,8 @@ main > section + section, main > div > section + section { position: relative; }
    THEME TOGGLE — floating pill, top-right, above the chatbot
    ============================================================ */
 .nova-theme-toggle {
-  position: fixed; top: 20px; right: 20px; z-index: 2147482000;
+  /* Bottom-left corner so it doesn't fight the site's Talk-to-Us button. */
+  position: fixed; bottom: 24px; left: 24px; z-index: 2147482000;
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 12px 8px 10px;
   background: var(--nova-glass);
