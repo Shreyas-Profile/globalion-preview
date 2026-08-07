@@ -71,18 +71,25 @@
   const collapseEmptySections = () => {
     const main = document.querySelector('main');
     if (!main) return 0;
-    const sections = main.querySelectorAll('section, main > div > div');
+    // Sweep ALL direct/near-direct descendants, not just <section>. The
+    // Next.js mirror keeps wrapper <div>s with no content that still have
+    // height (padding/margin) — those cause the dead zone bug.
+    const scope = main;
     let hidden = 0;
-    for (const s of sections) {
-      if (s.classList.contains('nova-tabs')) continue;
-      if (s.closest('.glbl-chat-panel')) continue;
-      const text = (s.innerText || '').replace(/\s+/g, '').length;
-      const hasMedia = !!s.querySelector('img, video, iframe, svg, canvas');
-      // If the section has no rendered text AND no media, it's dead
-      if (text < 4 && !hasMedia) {
-        s.style.display = 'none';
-        hidden++;
-      }
+    const isDead = (el) => {
+      if (el.classList.contains('nova-tabs') || el.classList.contains('nova-progress')) return false;
+      if (el.classList.contains('glbl-chat-btn') || el.classList.contains('glbl-chat-panel')) return false;
+      if (el.classList.contains('nova-theme-toggle')) return false;
+      if (el.closest('.glbl-chat-panel')) return false;
+      const text = (el.innerText || '').replace(/\s+/g, '').length;
+      const hasMedia = !!el.querySelector('img, video, iframe, svg[width], canvas');
+      const hasHeading = !!el.querySelector('h1, h2, h3');
+      if (text < 8 && !hasMedia && !hasHeading) return true;
+      return false;
+    };
+    // First pass: sections and top-level divs
+    for (const el of scope.querySelectorAll('section, main > div, main > div > div, main > div > div > div')) {
+      if (isDead(el)) { el.style.display = 'none'; hidden++; }
     }
     return hidden;
   };
