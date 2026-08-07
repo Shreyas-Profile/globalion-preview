@@ -114,9 +114,13 @@ for (const file of htmlFiles) {
   html = html.replace(/<link[^>]*_assistant\/enhance\.css[^>]*>\s*/g, '');
 
   // enhance.css goes in <head> right before </head> so it cascades over
-  // the site's own CSS (still deferred by being late in <head>).
+  // the site's own CSS. Also inject the Fraunces + Inter font preconnect
+  // + link so mirror pages match the light editorial theme.
+  const FONTS_TAG = `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">`;
   if (html.includes('</head>')) {
-    html = html.replace('</head>', `${ENHANCE_CSS_TAG}\n</head>`);
+    html = html.replace(/<link[^>]*fonts\.googleapis\.com[^>]*>/g, '');
+    html = html.replace(/<link[^>]*fonts\.gstatic\.com[^>]*>/g, '');
+    html = html.replace('</head>', `${FONTS_TAG}\n${ENHANCE_CSS_TAG}\n</head>`);
   }
   // enhance.js + widget.js at end of <body>
   if (html.includes('</body>')) {

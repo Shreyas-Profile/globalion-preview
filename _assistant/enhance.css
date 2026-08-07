@@ -48,19 +48,132 @@
   height: 14px;
 }
 
-/* Light-theme overrides — only when user explicitly picks Light */
-[data-theme="light"] {
-  --nova-light-bg: #f8f5ef;
-  --nova-light-fg: #17172a;
-}
-[data-theme="light"] body {
-  background: var(--nova-light-bg) !important;
-  color: var(--nova-light-fg) !important;
-}
+/* Theme toggle in dark defaults */
 [data-theme="light"] .nova-theme-toggle {
   background: rgba(255, 255, 255, .9);
   border-color: rgba(0, 0, 0, .1);
   color: #17172a;
+}
+
+/* ============================================================
+   MIRROR PAGES → light editorial palette
+   Applies to every page EXCEPT the hand-crafted homepage
+   (which is already light and has its own <style>).
+   Detected by presence of Tailwind's .bg-background class on <body>.
+   ============================================================ */
+body.bg-background,
+body[class*="__variable"] {
+  background: #faf7f2 !important;
+  color: #0f1729 !important;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+/* Recolour every Tailwind bg class on mirrored pages */
+body.bg-background *[class*="bg-background"],
+body.bg-background *[class*="bg-surface"],
+body.bg-background *[class*="bg-neutral"],
+body.bg-background *[class*="bg-slate-9"],
+body.bg-background *[class*="bg-zinc-9"],
+body.bg-background *[class*="bg-black"] {
+  background-color: transparent !important;
+}
+/* Cards on mirrored pages get white bg + subtle border */
+body.bg-background [class*="rounded-2xl"][class*="border"],
+body.bg-background [class*="rounded-xl"][class*="border"],
+body.bg-background [class*="rounded-lg"][class*="border"] {
+  background: #ffffff !important;
+  border-color: #e5ddd0 !important;
+  color: #0f1729 !important;
+}
+
+/* Force text colour on mirror */
+body.bg-background *[class*="text-white"],
+body.bg-background *[class*="text-slate-1"],
+body.bg-background *[class*="text-slate-2"],
+body.bg-background *[class*="text-neutral-1"],
+body.bg-background *[class*="text-neutral-2"] {
+  color: #0f1729 !important;
+}
+body.bg-background *[class*="text-slate-3"],
+body.bg-background *[class*="text-slate-4"],
+body.bg-background *[class*="text-neutral-3"],
+body.bg-background *[class*="text-neutral-4"],
+body.bg-background *[class*="text-foreground"] {
+  color: #4b5563 !important;
+}
+
+/* Amber accent classes: keep amber but bump saturation for light bg */
+body.bg-background *[class*="text-amber"],
+body.bg-background *[class*="text-yellow"],
+body.bg-background *[class*="text-accent"] {
+  color: #d97706 !important;
+}
+body.bg-background *[class*="bg-amber"],
+body.bg-background *[class*="bg-accent"] {
+  background: #d97706 !important;
+  color: #ffffff !important;
+}
+body.bg-background *[class*="border-amber"],
+body.bg-background *[class*="border-accent"] {
+  border-color: #d97706 !important;
+}
+
+/* Force the header on mirror pages to be a light glass bar */
+body.bg-background header,
+body.bg-background [class*="Header"]:not(main *):not(section *) {
+  background: rgba(250, 247, 242, 0.85) !important;
+  border-bottom: 1px solid #e5ddd0 !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Footer on mirror pages: cream + dark text */
+body.bg-background footer,
+body.bg-background [class*="footer"]:not(main *) {
+  background: #f2ede4 !important;
+  color: #4b5563 !important;
+  border-top: 1px solid #e5ddd0 !important;
+}
+body.bg-background footer * {
+  color: inherit !important;
+}
+body.bg-background footer h5,
+body.bg-background footer h4,
+body.bg-background footer h3,
+body.bg-background footer strong {
+  color: #0f1729 !important;
+}
+body.bg-background footer a {
+  color: #4b5563 !important;
+}
+body.bg-background footer a:hover {
+  color: #0f1729 !important;
+}
+
+/* Headings on mirror get the serif face */
+body.bg-background h1, body.bg-background h2, body.bg-background h3 {
+  font-family: 'Fraunces', Georgia, serif !important;
+  letter-spacing: -0.02em !important;
+  color: #0f1729 !important;
+}
+
+/* Buttons on mirror — dark navy pill */
+body.bg-background a[href="/contact"],
+body.bg-background a[href="/contact/"] {
+  background: #0f1729 !important;
+  color: #faf7f2 !important;
+  border: none !important;
+}
+body.bg-background a[href="/contact"]:hover,
+body.bg-background a[href="/contact/"]:hover {
+  background: #d97706 !important;
+}
+
+/* Load Fraunces + Inter on mirror pages */
+body.bg-background::before {
+  content: "";
+  display: none;
+  /* Trigger the font import via @import in the actual link tag we inject */
 }
 
 /* ============================================================
