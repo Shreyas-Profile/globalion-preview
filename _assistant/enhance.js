@@ -85,6 +85,13 @@
       const hasMedia = !!el.querySelector('img, video, iframe, svg[width], canvas');
       const hasHeading = !!el.querySelector('h1, h2, h3');
       if (text < 8 && !hasMedia && !hasHeading) return true;
+      // Section has heading but < 200 chars of body → likely a broken
+      // React-driven carousel (heading + arrows but no cards). Kill it —
+      // our nova-tabs already serves the same purpose above.
+      if (hasHeading && text < 200 && el.tagName === 'SECTION' &&
+          el.offsetHeight > 400) {
+        return true;
+      }
       return false;
     };
     // First pass: sections and top-level divs
