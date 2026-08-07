@@ -1,183 +1,260 @@
-/* Nova UAT visual polish — v2, aggressive rework layer over globalion.in.
-   Design references: Anthropic, Linear, Vercel, Cursor.
-   Never edits HTML; only re-skins via CSS. Load order guarantees cascade wins.
+/* Nova UAT visual polish — v3 FULL REPAINT.
+   References: Vercel (gradient blobs + serif hero), Linear (subtle glass),
+   Cursor (electric accent), Anthropic (warm cream light mode).
+   Everything CSS-only, layered over the mirrored globalion.in HTML.
 */
 
-:root {
+:root, [data-theme="dark"] {
   --nova-ease: cubic-bezier(.22, 1.2, .36, 1);
-  --nova-ease-2: cubic-bezier(.4, 0, .2, 1);
-  --nova-accent: #f59e0b;         /* matches Globalion's amber */
-  --nova-accent-hi: #fbbf24;
-  --nova-blue: #3b82f6;
-  --nova-blue-hi: #93c5fd;
+  --nova-bg-0:      #050914;
+  --nova-bg-1:      #0a1128;
+  --nova-fg:        #e6edff;
+  --nova-fg-muted:  #94a3c4;
+  --nova-accent:    #6366f1;   /* indigo */
+  --nova-accent-hi: #a78bfa;   /* violet */
+  --nova-cyan:      #22d3ee;
+  --nova-line:      rgba(148, 163, 196, .12);
+  --nova-glass:     rgba(10, 17, 40, .72);
+  --nova-card:      rgba(255, 255, 255, .04);
+  --nova-card-hover:rgba(99, 102, 241, .08);
+  --nova-shadow:    0 24px 48px -16px rgba(99, 102, 241, .28);
 }
 
-/* Smooth scroll + a tinted native-look scrollbar */
+[data-theme="light"] {
+  --nova-bg-0:      #f8f5ef;
+  --nova-bg-1:      #ede8dc;
+  --nova-fg:        #17172a;
+  --nova-fg-muted:  #5a5d78;
+  --nova-accent:    #4338ca;   /* darker indigo for contrast on cream */
+  --nova-accent-hi: #7c3aed;
+  --nova-cyan:      #0891b2;
+  --nova-line:      rgba(23, 23, 42, .10);
+  --nova-glass:     rgba(248, 245, 239, .78);
+  --nova-card:      #ffffff;
+  --nova-card-hover:#fbfaf5;
+  --nova-shadow:    0 24px 48px -16px rgba(67, 56, 202, .22);
+}
+
+/* Auto = respect OS if user hasn't picked */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --nova-bg-0:      #f8f5ef;
+    --nova-bg-1:      #ede8dc;
+    --nova-fg:        #17172a;
+    --nova-fg-muted:  #5a5d78;
+    --nova-accent:    #4338ca;
+    --nova-accent-hi: #7c3aed;
+    --nova-cyan:      #0891b2;
+    --nova-line:      rgba(23, 23, 42, .10);
+    --nova-glass:     rgba(248, 245, 239, .78);
+    --nova-card:      #ffffff;
+    --nova-card-hover:#fbfaf5;
+    --nova-shadow:    0 24px 48px -16px rgba(67, 56, 202, .22);
+  }
+}
+
 html { scroll-behavior: smooth; }
-* { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.15) transparent; }
-*::-webkit-scrollbar { width: 10px; height: 10px; }
-*::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
-  border-radius: 6px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-*::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.28); background-clip: padding-box; border: 2px solid transparent; }
-*::-webkit-scrollbar-track { background: transparent; }
 
-/* ==== Ambient background ==== */
+/* Force our palette onto the mirrored site */
+html, body {
+  background: var(--nova-bg-0) !important;
+  color: var(--nova-fg) !important;
+  transition: background-color .5s var(--nova-ease), color .5s var(--nova-ease);
+}
+
+/* --- HUGE animated gradient blob background (Vercel-style) --- */
 body::before {
   content: "";
-  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  position: fixed; inset: -20%;
+  z-index: -3; pointer-events: none;
   background:
-    radial-gradient(1400px 700px at 12% -12%, rgba(245, 158, 11, .10), transparent 60%),
-    radial-gradient(1000px 600px at 92% 8%, rgba(59, 130, 246, .07), transparent 55%),
-    radial-gradient(900px 900px at 50% 110%, rgba(147, 197, 253, .05), transparent 60%);
+    radial-gradient(closest-side at 20% 20%, var(--nova-accent) 0%, transparent 55%),
+    radial-gradient(closest-side at 82% 8%,  var(--nova-cyan)   0%, transparent 55%),
+    radial-gradient(closest-side at 60% 92%, var(--nova-accent-hi) 0%, transparent 55%);
+  opacity: .22;
+  filter: blur(80px);
+  animation: nova-drift 22s ease-in-out infinite alternate;
+}
+@keyframes nova-drift {
+  0%   { transform: translate3d(0,0,0) scale(1); }
+  50%  { transform: translate3d(-3%, 2%, 0) scale(1.05); }
+  100% { transform: translate3d(3%, -1%, 0) scale(0.98); }
 }
 body::after {
-  /* very subtle noise so the gradients don't look flat */
+  /* subtle grain */
   content: "";
-  position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  opacity: .03; mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.6'/></svg>");
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  opacity: .04; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+[data-theme="light"] body::before { opacity: .35; }
+
+/* --- Recolour the amber Tailwind classes to our indigo palette --- */
+[class*="text-amber"], [class*="text-yellow"], [class*="text-orange"] {
+  color: var(--nova-accent) !important;
+}
+[class*="bg-amber"], [class*="bg-yellow"], [class*="bg-orange"] {
+  background-color: var(--nova-accent) !important;
+  color: #fff !important;
+}
+[class*="border-amber"], [class*="border-yellow"], [class*="border-orange"] {
+  border-color: var(--nova-accent) !important;
+}
+/* Common Tailwind neutral overrides — force the mirror to use our vars */
+[class*="bg-black"], [class*="bg-slate-9"], [class*="bg-neutral-9"], [class*="bg-zinc-9"], [class*="bg-gray-9"] {
+  background-color: transparent !important;
+}
+[data-theme="light"] [class*="text-white"], [data-theme="light"] [class*="text-slate-1"],
+[data-theme="light"] [class*="text-neutral-1"] {
+  color: var(--nova-fg) !important;
+}
+[data-theme="light"] [class*="text-slate-4"], [data-theme="light"] [class*="text-slate-3"],
+[data-theme="light"] [class*="text-neutral-4"] {
+  color: var(--nova-fg-muted) !important;
 }
 
-/* ==== Sticky header — becomes a glass bar as you scroll ==== */
+/* --- Header goes glass on scroll --- */
 body.nova-scrolled header,
-body.nova-scrolled [class*="Header"]:not(main *):not(section *),
-body.nova-scrolled nav[class*="nav"] {
-  background: rgba(10, 12, 18, .75) !important;
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-bottom: 1px solid rgba(255, 255, 255, .07);
-  transition: background .3s var(--nova-ease-2), border-color .3s var(--nova-ease-2);
+body.nova-scrolled [class*="header"]:not(main *):not(section *):not(article *) {
+  background: var(--nova-glass) !important;
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border-bottom: 1px solid var(--nova-line) !important;
+  transition: background .3s var(--nova-ease), border-color .3s var(--nova-ease);
 }
 
-/* ==== Reveal-on-scroll ==== */
-.nova-reveal {
-  opacity: 0;
-  transform: translateY(28px);
-  transition: opacity .8s var(--nova-ease), transform .8s var(--nova-ease);
-  will-change: opacity, transform;
-}
-.nova-reveal.in { opacity: 1; transform: none; }
-
-/* ==== Cards — modern soft-shadow style with gradient border on hover ==== */
-main [class*="card"],
-main [class*="Card"],
-main article,
-main [data-card] {
+/* --- Cards --- */
+main [class*="card"], main [class*="Card"], main article, main [data-card] {
   position: relative;
+  background: var(--nova-card) !important;
+  border: 1px solid var(--nova-line) !important;
+  border-radius: 16px;
   transition:
     transform .35s var(--nova-ease),
     box-shadow .35s var(--nova-ease),
-    border-color .35s var(--nova-ease);
+    border-color .35s var(--nova-ease),
+    background .35s var(--nova-ease);
 }
-main [class*="card"]:hover,
-main [class*="Card"]:hover,
-main article:hover,
-main [data-card]:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 20px 40px -12px rgba(245, 158, 11, .18),
-    0 8px 20px -8px rgba(0, 0, 0, .35);
-  border-color: rgba(245, 158, 11, .35) !important;
+main [class*="card"]:hover, main [class*="Card"]:hover,
+main article:hover, main [data-card]:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--nova-shadow);
+  border-color: var(--nova-accent) !important;
+  background: var(--nova-card-hover) !important;
 }
-/* Soft glow ring that fades in on hover (creates the border-gradient look) */
-main [class*="card"]::after,
-main [class*="Card"]::after,
-main article::after {
+main [class*="card"]::before, main [class*="Card"]::before, main article::before {
   content: "";
   position: absolute; inset: -1px;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(135deg, rgba(245,158,11,.5), rgba(59,130,246,.4));
+  background: linear-gradient(135deg, var(--nova-accent), var(--nova-cyan));
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor; mask-composite: exclude;
   opacity: 0;
   transition: opacity .35s var(--nova-ease);
   pointer-events: none;
 }
-main [class*="card"]:hover::after,
-main [class*="Card"]:hover::after,
-main article:hover::after { opacity: 1; }
+main [class*="card"]:hover::before, main [class*="Card"]:hover::before,
+main article:hover::before { opacity: 1; }
 
-/* ==== Buttons — consistent micro-interactions ==== */
+/* --- Buttons --- */
 button, a[role="button"], [class*="btn"], [class*="Button"] {
   transition:
     transform .18s var(--nova-ease),
     box-shadow .18s var(--nova-ease),
-    background-color .18s var(--nova-ease),
-    color .18s var(--nova-ease),
     filter .18s var(--nova-ease);
 }
 button:hover:not(:disabled), a[role="button"]:hover, [class*="btn"]:hover, [class*="Button"]:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.08);
+  transform: translateY(-2px);
+  filter: brightness(1.1);
 }
 button:active:not(:disabled), a[role="button"]:active, [class*="btn"]:active, [class*="Button"]:active {
   transform: translateY(0) scale(.985);
 }
-
-/* Primary CTA — richer amber glow */
-[class*="btn-primary"], [class*="Button-primary"],
-button[class*="primary"], a[class*="Talk to Us"], a[href="/contact"], a[href="/contact/"] {
-  box-shadow: 0 4px 20px -4px rgba(245, 158, 11, .35);
+a[href="/contact"], a[href="/contact/"], [class*="Talk"], [class*="talk-to-us"] {
+  background: linear-gradient(135deg, var(--nova-accent), var(--nova-accent-hi)) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 24px -8px rgba(99, 102, 241, .55);
 }
-[class*="btn-primary"]:hover, [class*="Button-primary"]:hover,
-button[class*="primary"]:hover, a[class*="Talk to Us"]:hover,
-a[href="/contact"]:hover, a[href="/contact/"]:hover {
-  box-shadow: 0 8px 28px -4px rgba(245, 158, 11, .55) !important;
+a[href="/contact"]:hover, a[href="/contact/"]:hover, [class*="Talk"]:hover {
+  box-shadow: 0 12px 36px -8px rgba(99, 102, 241, .75) !important;
 }
 
-/* ==== Prose link underline animation ==== */
+/* --- Prose link underline --- */
 main a:not([class*="btn"]):not([class*="button"]):not([class*="Button"]):not(nav a):not(header a):not(footer a):not([role="button"]) {
+  color: var(--nova-accent) !important;
   background-image: linear-gradient(currentColor, currentColor);
   background-size: 0 1.5px;
   background-position: 0 100%;
   background-repeat: no-repeat;
-  transition: background-size .35s var(--nova-ease), color .18s var(--nova-ease);
+  transition: background-size .35s var(--nova-ease);
 }
 main a:not([class*="btn"]):not([class*="button"]):not([class*="Button"]):not(nav a):not(header a):not(footer a):not([role="button"]):hover {
   background-size: 100% 1.5px;
 }
 
-/* ==== Typography rhythm ==== */
-h1 { letter-spacing: -.025em; }
-h2 { letter-spacing: -.02em; }
-h3 { letter-spacing: -.012em; }
+/* --- Typography --- */
+h1 { letter-spacing: -.028em; }
+h2 { letter-spacing: -.022em; }
+h3 { letter-spacing: -.014em; }
 main p, main li { line-height: 1.65; }
 
-/* ==== Section dividers ==== */
-main > section + section,
-main > div > section + section {
-  position: relative;
-}
+/* --- Reveal on scroll --- */
+.nova-reveal { opacity: 0; transform: translateY(28px);
+  transition: opacity .8s var(--nova-ease), transform .8s var(--nova-ease); }
+.nova-reveal.in { opacity: 1; transform: none; }
+
+/* --- Section dividers --- */
 main > section + section::before,
 main > div > section + section::before {
   content: "";
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 80px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(245,158,11,.35), transparent);
-  opacity: .7;
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100px; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--nova-accent), transparent);
+  opacity: .6;
 }
+main > section + section, main > div > section + section { position: relative; }
 
-/* ==== Selection colour to match brand ==== */
-::selection { background: rgba(245, 158, 11, .35); color: #fff; }
-::-moz-selection { background: rgba(245, 158, 11, .35); color: #fff; }
-
-/* ==== Focus rings — visible and on-brand ==== */
-:focus-visible {
-  outline: 2px solid rgba(245, 158, 11, .8);
-  outline-offset: 3px;
-  border-radius: 4px;
+/* --- Custom scrollbar --- */
+* { scrollbar-width: thin; scrollbar-color: var(--nova-accent) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--nova-accent), var(--nova-accent-hi));
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
+*::-webkit-scrollbar-track { background: transparent; }
 
-/* ==== Reduced motion ==== */
+/* --- Selection + focus --- */
+::selection { background: var(--nova-accent); color: #fff; }
+:focus-visible { outline: 2px solid var(--nova-accent); outline-offset: 3px; border-radius: 6px; }
+
+/* ============================================================
+   THEME TOGGLE — floating pill, top-right, above the chatbot
+   ============================================================ */
+.nova-theme-toggle {
+  position: fixed; top: 20px; right: 20px; z-index: 2147482000;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px 8px 10px;
+  background: var(--nova-glass);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--nova-line);
+  border-radius: 999px;
+  color: var(--nova-fg);
+  font: 500 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 8px 24px -12px rgba(0,0,0,.4);
+  transition: all .2s var(--nova-ease);
+}
+.nova-theme-toggle:hover { transform: translateY(-1px); border-color: var(--nova-accent); }
+.nova-theme-toggle svg { width: 14px; height: 14px; }
+
+/* --- Reduced motion --- */
 @media (prefers-reduced-motion: reduce) {
   * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
   html { scroll-behavior: auto; }
   .nova-reveal { opacity: 1; transform: none; }
+  body::before { animation: none; }
 }
