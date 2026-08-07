@@ -66,6 +66,27 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   };
 
+  /* Collapse empty/near-empty sections that the mirror left behind
+     from stripped Next.js React components (huge dead zone bug). */
+  const collapseEmptySections = () => {
+    const main = document.querySelector('main');
+    if (!main) return 0;
+    const sections = main.querySelectorAll('section, main > div > div');
+    let hidden = 0;
+    for (const s of sections) {
+      if (s.classList.contains('nova-tabs')) continue;
+      if (s.closest('.glbl-chat-panel')) continue;
+      const text = (s.innerText || '').replace(/\s+/g, '').length;
+      const hasMedia = !!s.querySelector('img, video, iframe, svg, canvas');
+      // If the section has no rendered text AND no media, it's dead
+      if (text < 4 && !hasMedia) {
+        s.style.display = 'none';
+        hidden++;
+      }
+    }
+    return hidden;
+  };
+
   /* Inject a tabbed explorer section on the homepage only */
   const TAB_DATA = {
     Products: [
@@ -146,6 +167,8 @@
   const ready = () => {
     buildToggle();
     buildProgress();
+    const collapsed = collapseEmptySections();
+    if (collapsed) console.log(`[nova] collapsed ${collapsed} empty section(s)`);
     buildTabs();
 
     const main = document.querySelector('main') || document.body;

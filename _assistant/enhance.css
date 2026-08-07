@@ -108,18 +108,35 @@ body::after {
   color: var(--nova-accent) !important;
   background-color: transparent !important;
 }
-/* Hue-shift the WHOLE hero region so the amber gradient text becomes indigo.
-   Only affects colours; text and shapes untouched. */
-main > section:first-of-type,
-main > div > section:first-of-type,
-[class*="hero"], [class*="Hero"] {
-  filter: hue-rotate(210deg) saturate(1.05);
+/* Recolour amber text on the hero via specific bg gradient overrides —
+   filter: hue-rotate was breaking the Talk to Us button (rotated its
+   indigo gradient into green). We accept that some amber accents on the
+   inner mockup panel will remain; the overall palette shift is enough. */
+[class*="text-gradient"], [class*="gradient-text"],
+h1 [class*="from-amber"], h1 [class*="to-amber"] {
+  background: linear-gradient(135deg, var(--nova-accent), var(--nova-accent-hi)) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
 }
-/* Also shift the product mockup panel and the logo mark */
-header [class*="Logo"], header a[href="/"] svg,
-[class*="mock"], [class*="Mock"] {
-  filter: hue-rotate(210deg) saturate(1.05);
+/* The gradient hero text is a <span> — target common wrappers */
+main h1 span[class*="text-"], main h1 span[style*="gradient"] {
+  color: var(--nova-accent) !important;
 }
+
+/* Hide empty sections created by stripped Next.js React components.
+   These sections rendered as invisible containers in the mirror
+   because their contents were React-only. Kill any section with no
+   real content so the page doesn't have massive dead zones. */
+main > section:empty,
+main > div > section:empty,
+main > section > div:empty {
+  display: none !important;
+}
+/* Also collapse sections that only contain whitespace/wrappers with
+   no meaningful text — this is what causes the huge dead zone
+   between hero and footer on the homepage. */
 /* Common Tailwind neutral overrides — force the mirror to use our vars */
 [class*="bg-black"], [class*="bg-slate-9"], [class*="bg-neutral-9"], [class*="bg-zinc-9"], [class*="bg-gray-9"] {
   background-color: transparent !important;
