@@ -129,53 +129,42 @@ export async function onRequestPost({ request, env }) {
     indexedAt: siteContent.indexedAt,
   });
 
-  // Retry on transient 5xx from OpenRouter — Pawan reported "network error"
-  // in the widget, which was our function returning 502 after a single
-  // failed upstream call. Retry up to 3 times with short backoff.
-  const requestBody = JSON.stringify({
-    model,
-    messages: [{ role: 'system', content: system }, ...trimmed],
-    temperature: 0.3,
-    max_tokens: 800,
-  });
-
-  let upstream, lastError = '';
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    try {
-      upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${key}`,
-          'HTTP-Referer': 'https://globalion-preview.regiq.in',
-          'X-Title': 'Globalion UAT chatbot',
-        },
-        body: requestBody,
-      });
-      if (upstream.ok) break;
-      // Only retry on 5xx / 429; 4xx errors are our fault, no point retrying
-      if (upstream.status < 500 && upstream.status !== 429) break;
-      lastError = `HTTP ${upstream.status}`;
-    } catch (e) {
-      lastError = e?.message || 'fetch failed';
-    }
-    if (attempt < 3) await new Promise((r) => setTimeout(r, 400 * attempt));
-  }
-
-  if (!upstream || !upstream.ok) {
-    const text = upstream ? await upstream.text().catch(() => '') : lastError;
-    return json(
-      {
-        error: `The model is having a moment — please try again. (${text.slice(0, 200)})`,
+  // One attempt only — server-side retry was compounding OpenRouter's
+  // 10-20s latency and blowing past Cloudflare Pages Functions' 30s
+  // wall-time, which surfaced as CDN-level 502s. Client widget already
+  // retries 3× on 5xx/network errors so blips are covered end-to-end.
+  const controller = new AbortController();
+  const abort = setTimeout(() => controller.abort(), 24_000);
+  let upstream;
+  try {
+    upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${key}`,
+        'HTTP-Referer': 'https://globalion-preview.regiq.in',
+        'X-Title': 'Globalion UAT chatbot',
       },
-      502,
-    );
+      body: JSON.stringify({
+        model,
+        messages: [{ role: 'system', content: system }, ...trimmed],
+        temperature: 0.3,
+        max_tokens: 500,
+      }),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    clearTimeout(abort);
+    return json({ error: `Upstream timed out (${e?.name || 'error'}). Please try again.` }, 504);
+  }
+  clearTimeout(abort);
+  if (!upstream.ok) {
+    const text = await upstream.text().catch(() => '');
+    return json({ error: `Model returned HTTP ${upstream.status}. ${text.slice(0, 200)}` }, 502);
   }
   const data = await upstream.json();
   const reply = data?.choices?.[0]?.message?.content?.trim();
-  if (!reply) {
-    return json({ error: 'Model returned an empty response — please try again.' }, 502);
-  }
+  if (!reply) return json({ error: 'Model returned an empty response — please try again.' }, 502);
   return json({ reply, model });
 }
 
